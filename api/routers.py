@@ -6,6 +6,7 @@ from urllib3.http2.probe import acquire_and_get
 
 from config import CM_KEY, CM_URL
 from controllers import get_liquidity, calc_risk_score
+from agent import Agent
 
 app = FastAPI()
 
@@ -16,25 +17,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-@app.get("/crypto")
-async def get_offers():
-    headers = {
-        "Accept": "application/json",
-        "X-CMC_PRO_API_KEY": CM_KEY
-    }
-    params = {
-        "start": "1",
-        "limit": "5000",
-        "convert": "USD"
-    }
-    try:
-        response = requests.get(CM_URL, headers=headers, params=params)
-        response.raise_for_status()
-        return response.json()
-    except requests.exceptions.RequestException as e:
-        raise HTTPException(status_code=502, detail = (str(e)))
-
 
 @app.get("/token-data/{network}")
 async def get_token_data(network: str):
@@ -49,18 +31,31 @@ async def get_token_data(network: str):
     }
 
     risk_score = calc_risk_score(scores)
+    a = Agent()
 
     payload = {
-        "risk": risk_score,
-        "liquidity": {
-            "value": scores["liquidity_score"],
-            "description": "chujowe"
-        }
-        "holders_count": scores["holders_score"],
-        "token_age": scores["age_score"],
-        "source_code_verification": bool(scores["verified_score"]),
-        "scam_report": not bool(scores["blacklist_score"] == 0),
-        "top_holders_analysis": None
+    "risk": risk_score,
+    "liquidity": {
+        "score": scores["liquidity_score"],
+        "score_description": a.gen_description(str(scores["liquidity_score"]), "liquidity_score")
+    },
+    "holders_count": {
+        "score": scores["holders_score"],
+        "score_description": a.gen_description(str(scores["holders_score"]), "holders_score")
+    },
+    "token_age": {
+        "score": scores["age_score"],
+        "score_description": a.gen_description(str(scores["age_score"]), "age_score")
+    },
+    "source_code_verification": {
+        "score": bool(scores["verified_score"]),
+        "score_description": a.gen_description(str(scores["verified_score"]), "verified_score")
+    },
+    "scam_report": {
+        "score": not bool(scores["blacklist_score"] == 0),
+        "score_description": a.gen_description(str(scores["blacklist_score"]), "blacklist_score")
+    },
+    "top_holders_analysis": None
     }
 
     return payload
