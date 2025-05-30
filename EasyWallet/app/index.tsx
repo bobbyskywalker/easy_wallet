@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { ActivityIndicator, View } from 'react-native'
 
 export default function Index() {
-	const signedIn = false
+	const signedIn = true
 	const [isMounted, setIsMounted] = useState(false)
 	const router = useRouter()
 
@@ -16,7 +16,7 @@ export default function Index() {
 		if (!signedIn) {
 			router.replace('/(authentication)/login')
 		} else {
-			return
+			router.replace('/(authenticated)/home')
 		}
 	})
 
