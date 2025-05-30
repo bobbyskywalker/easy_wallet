@@ -75,9 +75,9 @@ async def get_token_data(network: str):
                 "score": bool(scores["blacklist_score"]),
                 "score_description": get_agent_description(str(scores["blacklist_score"]), "blacklist_score")
             },
-            "top_holders_analysis": None
+            "top_holders_analysis": None,
+            "summary": a.gen_summary(scores)
         }
-
         return payload
 
     except HTTPException:

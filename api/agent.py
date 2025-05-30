@@ -1,4 +1,3 @@
-from typing import Any
 from config import ai_client
 
 class Agent:
@@ -33,5 +32,13 @@ class Agent:
         return description
 
 
-    def gen_summary(self):
-        pass
+    def gen_summary(self, scores):
+        prompt = (
+            "You are a crypto-currency risk asssesment specialist.\n"
+            "Write a summary for risk factors about a certain token based on the index values and risk score provided below"
+            "Return only the summary"
+            "Maximum 6 sentences, be strict and give some advice to the user about the next steps and what he should evaluate before buying the token."
+            f"Data: {scores}"
+        )
+        description = self.__execute_prompt(prompt)
+        return description
