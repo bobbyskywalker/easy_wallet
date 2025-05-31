@@ -2,7 +2,7 @@ FROM python:3.12-slim
 
 WORKDIR /app
 COPY requirements.txt .
-RUN pip3 install -r serv_requirements.txt
+RUN pip3 install -r requirements.txt
 
 # server/ at /app/server
 COPY api/ ./api/
