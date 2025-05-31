@@ -9,6 +9,7 @@ import logging
 
 from openai import OpenAIError
 from agent import Agent
+from classic_swap import swap_tokens
 
 from service import (
     get_liquidity,
@@ -274,3 +275,13 @@ async def get_records_for_user(user_pubkey: str):
                 continue
 
         return results
+
+@app.post("/swap/{dst_address}")
+def swap_request(dst_address: str):
+    tx_hash = swap_tokens(
+        "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",  # ETH
+        dst_address, #"0x95aD61b0a150d79219dCF64E1E6Cc01f0B64C4cE",  # SHIBA INU
+        10000000000000
+    )
+    payload = {"tx_hash": tx_hash}
+    return payload
