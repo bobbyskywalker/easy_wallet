@@ -148,7 +148,6 @@ async def get_token_data(token_address: str):
         raise HTTPException(status_code=500, detail="Internal server error.")
 
 
-
 @app.post("/add_record")
 async def add_record(data: RecordInput):
     async with lock:
@@ -177,9 +176,6 @@ async def add_record(data: RecordInput):
                 b = s.encode()[:16]
                 return b + b'\x00' * (16-len(b))
 
-            print("DEBUG – user_address z frontendu:", data.user_address)
-            print("DEBUG – symbol_from:", data.symbol_from)
-            print("DEBUG – symbol_to:", data.symbol_to)
             user_pk = Pubkey.from_string(data.user_address)
             user_pk_bytes = bytes(user_pk)
             symbol_from_bytes = fixed16(data.symbol_from)
@@ -198,6 +194,7 @@ async def add_record(data: RecordInput):
             payload += struct.pack("<I", len(data.symbol_to))
             payload += data.symbol_to.encode()
 
+            payload += struct.pack("<d", data.amount)
             payload += struct.pack("<d", data.actual_price)
             payload += struct.pack("<B", data.risk_score)
             payload += struct.pack("<q", data.timestamp)
@@ -224,6 +221,7 @@ async def add_record(data: RecordInput):
                 return {"success": True, "signature": str(sig)}
             except Exception as exc:
                 raise HTTPException(status_code=500, detail=str(exc))
+
 
 
 @app.get("/records/{user_pubkey}", response_model=list[RecordOutput])
@@ -262,20 +260,22 @@ async def get_records_for_user(user_pubkey: str):
 
                 symbol_from = raw[off:off+16].rstrip(b"\0").decode(); off += 16
                 symbol_to   = raw[off:off+16].rstrip(b"\0").decode(); off += 16
+                amount      = struct.unpack_from("<d", raw, off)[0]; off += 8
                 price       = struct.unpack_from("<d", raw, off)[0]; off += 8
                 risk        = struct.unpack_from("<B", raw, off)[0]; off += 1
                 ts          = struct.unpack_from("<q", raw, off)[0]
 
                 results.append(RecordOutput(
-                                   symbol_from=symbol_from,
-                                   symbol_to=symbol_to,
-                                   actual_price=price,
-                                   risk_score=risk,
-                                   timestamp=ts
-                               ))
+                    symbol_from=symbol_from,
+                    symbol_to=symbol_to,
+                    amount=amount,
+                    actual_price=price,
+                    risk_score=risk,
+                    timestamp=ts
+                ))
 
             except Exception as e:
-                print(f"[!] Error while parsing record no. {i}: {e}")
+                print(f"[!] Błąd przy parsowaniu rekordu {i}: {e}")
                 continue
 
         return results
