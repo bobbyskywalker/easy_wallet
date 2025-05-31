@@ -267,7 +267,7 @@ async def get_records_for_user(user_pubkey: str):
                                ))
 
             except Exception as e:
-                print(f"[!] Błąd przy parsowaniu rekordu {i}: {e}")
+                print(f"[!] Error while parsing record no. {i}: {e}")
                 continue
 
         return results
