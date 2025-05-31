@@ -16,8 +16,10 @@ MORALIS_KEY=os.getenv("MORALIS_KEY")
 ONE_INCH_KEY=os.getenv("ONE_INCH_API_KEY")
 
 # wallet config
-walletAddressRaw = os.getenv("WALLET_ADDRESS")
-walletPrivateKey = os.getenv("WALLET_KEY")
+CHAIN_ID = 1
+RPC_URL = os.getenv("RPC_URL")
+WALLET_ADDRESS = os.getenv("WALLET_ADDRESS")
+WALLET_PRIVATE_KEY = os.getenv("WALLET_KEY")
 
 # blockchain config
 PROGRAM_ID = Pubkey.from_string("GfzivBz7tq7oAMNhVwUKt1GLEuT2LbXudWvGSyJ3vqYk")
