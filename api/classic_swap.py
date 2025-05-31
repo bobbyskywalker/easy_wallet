@@ -1,16 +1,13 @@
 import requests
 from web3 import Web3
-import os
-from config import ONE_INCH_KEY, WALLET_PRIVATE_KEY, WALLET_ADDRESS
+from config import ONE_INCH_KEY, WALLET_PRIVATE_KEY, WALLET_ADDRESS, RPC_URL, CHAIN_ID
 
-chainId = 1  # Ethereum Mainnet
-apiBaseUrl = f"https://api.1inch.dev/swap/v6.0/{chainId}"
-web3RpcUrl = os.getenv("RPC_URL")
+apiBaseUrl = f"https://api.1inch.dev/swap/v6.0/{CHAIN_ID}"
 headers = {
     "Authorization": f"Bearer {ONE_INCH_KEY}",
     "accept": "application/json"
 }
-web3 = Web3(Web3.HTTPProvider(web3RpcUrl))
+web3 = Web3(Web3.HTTPProvider(RPC_URL))
 walletAddress = Web3.to_checksum_address(WALLET_ADDRESS)
 
 def api_request_url(method_name, query_params):
@@ -38,10 +35,9 @@ def sign_and_send_transaction(tx, wallet_private_key):
     tx["to"] = Web3.to_checksum_address(tx["to"])
     tx["gas"] = int(tx["gas"])
     tx["gasPrice"] = int(tx["gasPrice"])
-    print(int(tx["gasPrice"]))
     tx["nonce"] = web3.eth.get_transaction_count(walletAddress)
     tx["value"] = int(tx["value"])
-    tx["chainId"] = chainId
+    tx["chainId"] = CHAIN_ID
     tx.pop("from", None)
     signed_tx = web3.eth.account.sign_transaction(tx, wallet_private_key)
     tx_hash = web3.eth.send_raw_transaction(signed_tx.raw_transaction)
