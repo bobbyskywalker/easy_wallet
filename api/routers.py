@@ -11,30 +11,33 @@ from typing import List
 from openai import OpenAIError
 from agent import Agent
 from classic_swap import swap_tokens
+from get_wallet_balance import get_wallet_balance
 
 from service import (
     get_liquidity,
     calc_risk_score,
     get_marketcap_score,
     get_token_holders,
-    get_token_creation_date
+    get_token_creation_date,
+    get_available_tokens
 )
 
 from bc_models import (
     RecordInput,
-    RecordOutput
+    RecordOutput,
+    SwapModel
 )
 
 from config import (
     PROGRAM_ID,
     SYS_PROGRAM_ID,
+    KEYPAIR_ENCODED,
     CLUSTER_URL,
     RISK_HEADER_DISCRIMINATOR,
     RISK_RECORD_DISCRIMINATOR
 )
 
 from contract_utils import (
-    load_keypair,
     header_pda,
     record_pda
 )
@@ -65,6 +68,8 @@ async def get_token_data(token_address: str):
     try:
         try:
             liquidity = get_liquidity(token_address)
+            if liquidity == None:
+                liquidity = 0
         except ValueError as e:
             logging.warning(f"Invalid token_address input: {e}")
             raise HTTPException(status_code=400, detail=f"Invalid token_address: {token_address}")
@@ -146,11 +151,10 @@ async def get_token_data(token_address: str):
         raise HTTPException(status_code=500, detail="Internal server error.")
 
 
-
 @app.post("/add_record")
 async def add_record(data: RecordInput):
     async with lock:
-        payer = load_keypair()
+        payer = KEYPAIR_ENCODED
         async with AsyncClient(CLUSTER_URL) as client:
             hdr = header_pda()
             hdr_info = await client.get_account_info(hdr)
@@ -175,9 +179,6 @@ async def add_record(data: RecordInput):
                 b = s.encode()[:16]
                 return b + b'\x00' * (16-len(b))
 
-            print("DEBUG – user_address z frontendu:", data.user_address)
-            print("DEBUG – symbol_from:", data.symbol_from)
-            print("DEBUG – symbol_to:", data.symbol_to)
             user_pk = Pubkey.from_string(data.user_address)
             user_pk_bytes = bytes(user_pk)
             symbol_from_bytes = fixed16(data.symbol_from)
@@ -196,6 +197,7 @@ async def add_record(data: RecordInput):
             payload += struct.pack("<I", len(data.symbol_to))
             payload += data.symbol_to.encode()
 
+            payload += struct.pack("<d", data.amount)
             payload += struct.pack("<d", data.actual_price)
             payload += struct.pack("<B", data.risk_score)
             payload += struct.pack("<q", data.timestamp)
@@ -222,7 +224,6 @@ async def add_record(data: RecordInput):
                 return {"success": True, "signature": str(sig)}
             except Exception as exc:
                 raise HTTPException(status_code=500, detail=str(exc))
-
 
 @app.get("/records/{user_pubkey}", response_model=list[RecordOutput])
 async def get_records_for_user(user_pubkey: str):
@@ -260,30 +261,34 @@ async def get_records_for_user(user_pubkey: str):
 
                 symbol_from = raw[off:off+16].rstrip(b"\0").decode(); off += 16
                 symbol_to   = raw[off:off+16].rstrip(b"\0").decode(); off += 16
+                amount      = struct.unpack_from("<d", raw, off)[0]; off += 8
                 price       = struct.unpack_from("<d", raw, off)[0]; off += 8
                 risk        = struct.unpack_from("<B", raw, off)[0]; off += 1
                 ts          = struct.unpack_from("<q", raw, off)[0]
 
                 results.append(RecordOutput(
-                                   symbol_from=symbol_from,
-                                   symbol_to=symbol_to,
-                                   actual_price=price,
-                                   risk_score=risk,
-                                   timestamp=ts
-                               ))
+                    symbol_from=symbol_from,
+                    symbol_to=symbol_to,
+                    amount=amount,
+                    actual_price=price,
+                    risk_score=risk,
+                    timestamp=ts
+                ))
 
             except Exception as e:
-                print(f"[!] Error while parsing record no. {i}: {e}")
+                print(f"[!] Błąd przy parsowaniu rekordu {i}: {e}")
                 continue
 
         return results
 
-@app.post("/swap/{dst_address}")
-def swap_request(dst_address: str):
+@app.post("/swap")
+def swap_request(req: SwapModel):
     tx_hash = swap_tokens(
-        "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",  # ETH
-        dst_address, #"0x95aD61b0a150d79219dCF64E1E6Cc01f0B64C4cE",  # SHIBA INU
-        10000000000000
+            req.src_token,  # 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE ETH
+            req.dst_token, #"0x95aD61b0a150d79219dCF64E1E6Cc01f0B64C4cE",  # SHIBA INU
+            req.amount,
+            req.wallet_address,
+            req.private_key
     )
     payload = {"tx_hash": tx_hash}
     return payload
@@ -296,4 +301,14 @@ def get_all_prices():
 @app.get("/price/")
 def get_token_price(token_address: List[str] = Query(...)):
     r = get_requested_token_prices(token_address)
+    return r
+
+@app.get("/wallet-balance/{wallet_address}")
+def wallet_balance(wallet_address: str):
+    balance = get_wallet_balance(wallet_address)
+    return balance
+
+@app.get("/get-available-tokens")
+def get_tokens():
+    r = get_available_tokens()
     return r

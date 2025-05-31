@@ -1,5 +1,5 @@
 import requests
-from config import ONE_INCH_KEY, WALLET_ADDRESS
+from config import ONE_INCH_KEY
 
 def get_wallet_balance(wallet_address):
 	apiUrl = "https://api.1inch.dev/portfolio/portfolio/v4/overview/erc20/current_value"
@@ -23,6 +23,6 @@ def get_wallet_balance(wallet_address):
 	response = requests.get(apiUrl, headers=headers, params=params)
 	return response.json()
 
-if __name__ == "__main__":
-	balance = get_wallet_balance(WALLET_ADDRESS)
-	print(balance)
+# if __name__ == "__main__":
+# 	balance = get_wallet_balance(WALLET_ADDRESS)
+# 	print(balance)

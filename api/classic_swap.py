@@ -1,6 +1,6 @@
 import requests
 from web3 import Web3
-from config import ONE_INCH_KEY, WALLET_PRIVATE_KEY, WALLET_ADDRESS, RPC_URL, CHAIN_ID
+from config import ONE_INCH_KEY, RPC_URL, CHAIN_ID
 
 def get_api_base_url():
     return f"https://api.1inch.dev/swap/v6.0/{CHAIN_ID}"
@@ -55,16 +55,16 @@ def sign_and_send_transaction(tx, wallet_address, wallet_private_key):
 def swap_tokens(src_token, dst_token, amount_wei, wallet_address, wallet_private_key):
     swap_params = build_swap_params(src_token, dst_token, amount_wei, wallet_address)
     swap_tx = build_tx_for_swap(swap_params)
-    tx_hash = sign_and_send_transaction(swap_tx, wallet_private_key)
+    tx_hash = sign_and_send_transaction(swap_tx, wallet_address, wallet_private_key)
     return tx_hash
 
-if __name__ == "__main__":
-    # Example usage
-    tx_hash = swap_tokens(
-        "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",  # ETH
-        "0x95aD61b0a150d79219dCF64E1E6Cc01f0B64C4cE",  # SHIBA INU
-        10000000000000,  # 0.00001 ETH in wei
-        WALLET_ADDRESS,
-        WALLET_PRIVATE_KEY
-    )
-    print("Tx hash:", tx_hash)
+# if __name__ == "__main__":
+#     # Example usage
+#     tx_hash = swap_tokens(
+#         "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",  # ETH
+#         "0x95aD61b0a150d79219dCF64E1E6Cc01f0B64C4cE",  # SHIBA INU
+#         10000000000000,  # 0.00001 ETH in wei
+#         WALLET_ADDRESS,
+#         WALLET_PRIVATE_KEY
+#     )
+#     print("Tx hash:", tx_hash)
