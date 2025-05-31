@@ -1,4 +1,5 @@
 import React from 'react'
+import CircularIconContainer from '../components/CircularIconContainer.tsx'
 
 interface TokenCardProps {
 	imageUrl?: string
@@ -31,15 +32,13 @@ function TokenCard({
       '
 		>
 			<div className='flex items-center gap-3'>
-				<div className='w-[48px] h-[48px] rounded-full bg-[#FFD166] flex items-center justify-center overflow-hidden'>
-					{imageUrl ? (
-						<img
-							src={imageUrl}
-							alt={symbol}
-							className='w-5 h-5 object-contain'
-						/>
-					) : null}
-				</div>
+				<CircularIconContainer
+					icon={
+						imageUrl
+						? <img src={imageUrl} alt={symbol} className="w-6 h-6 rounded-full object-contain" />
+						: undefined
+					}
+					/>
 				<div className='flex flex-col'>
 					<span className='text-sm font-semibold'>{symbol}</span>
 					<span className='text-xs text-gray-400'>{name}</span>
