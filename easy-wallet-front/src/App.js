@@ -1,9 +1,9 @@
+import CircularIconContainer from './components/CircularIconContainer'
+
 function App() {
 	return (
-		<div className='flex justify-center items-center h-screen bg-gray-100'>
-			<h1 className='text-3xl font-bold underline text-blue-500'>
-				Hello world!
-			</h1>
+		<div className='bg-blackBG min-h-screen flex justify-center items-center'>
+			<CircularIconContainer />
 		</div>
 	)
 }
