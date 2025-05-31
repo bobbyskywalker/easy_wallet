@@ -1,9 +1,8 @@
-import { createAppKit, useAppKit } from '@reown/appkit/react'
+import { createAppKit } from '@reown/appkit/react'
 import { WagmiProvider } from 'wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { projectId, metadata, networks, wagmiAdapter } from './config'
-import PrimaryButton from './components/PrimaryButton'
-import CircularIconContainer from './components/CircularIconContainer'
+import Home from './views/Home'
 
 const queryClient = new QueryClient()
 
@@ -31,22 +30,12 @@ createAppKit({
 })
 
 export function App() {
-	const { open } = useAppKit()
-
 	return (
-		<div className={'px-2'}>
 			<WagmiProvider config={wagmiAdapter.wagmiConfig}>
 				<QueryClientProvider client={queryClient}>
-					<PrimaryButton
-						label='Connect a Wallet'
-						onClick={() => {
-							open()
-						}}
-					/>
-					<CircularIconContainer />
+					<Home />
 				</QueryClientProvider>
 			</WagmiProvider>
-		</div>
 	)
 }
 
