@@ -10,6 +10,7 @@ import logging
 from openai import OpenAIError
 from agent import Agent
 from classic_swap import swap_tokens
+from get_wallet_balance import get_wallet_balance
 
 from service import (
     get_liquidity,
@@ -285,3 +286,8 @@ def swap_request(dst_address: str):
     )
     payload = {"tx_hash": tx_hash}
     return payload
+
+@app.post("/get-wallet-balance")
+def get_balance():
+    r = get_wallet_balance()
+    return r
