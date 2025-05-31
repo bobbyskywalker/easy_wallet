@@ -18,7 +18,7 @@ from service import (
     get_token_creation_date
 )
 
-from models import (
+from bc_models import (
     RecordInput,
     RecordOutput
 )
