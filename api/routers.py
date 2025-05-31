@@ -1,12 +1,20 @@
 from fastapi import HTTPException
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
 import logging
 
 from openai import OpenAIError
-
-from service import get_liquidity, calc_risk_score, get_marketcap_score, get_token_holders, get_token_creation_date
 from agent import Agent
+
+from service import (
+    get_liquidity,
+    calc_risk_score,
+    get_marketcap_score,
+    get_token_holders,
+    get_token_creation_date
+)
+
 
 app = FastAPI()
 
@@ -18,6 +26,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# main token data retrieval endpoint
 @app.get("/token-data/{token_address}")
 async def get_token_data(token_address: str):
     try:

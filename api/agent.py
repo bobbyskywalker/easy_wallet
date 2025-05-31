@@ -1,5 +1,7 @@
 from config import ai_client
 
+# A LLM integration module for creating descriptions and summary
+# of retrieved indices
 class Agent:
     def __init__(self):
         self.ai_client = ai_client
@@ -28,7 +30,6 @@ class Agent:
         )
         description = self.__execute_prompt(prompt)
         return description
-
 
     def gen_summary(self, scores):
         prompt = (

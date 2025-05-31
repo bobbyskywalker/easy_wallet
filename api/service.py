@@ -1,6 +1,5 @@
 import requests
 from moralis import evm_api
-from typing import Dict
 from datetime import datetime, timezone
 from dateutil.relativedelta import relativedelta
 import re
@@ -8,9 +7,9 @@ import re
 from config import MORALIS_KEY
 
 
-# liquidity fetch utility function
-# @param: network- a network to fetch the index value from
-def get_liquidity(token_address: str):
+### SECTION: token data fetch utility functions
+
+def get_liquidity(token_address: str) -> float:
     url = f"https://api.dexscreener.com/latest/dex/tokens/{token_address}"
 
     response = requests.get(url)
@@ -19,7 +18,7 @@ def get_liquidity(token_address: str):
     total_liquidity = sum(float(pair.get("liquidity", {}).get("usd", 0)) for pair in data.get("pairs", []))
     return total_liquidity
 
-def get_token_holders(token_address: str):
+def get_token_holders(token_address: str) -> float:
     url = f"https://deep-index.moralis.io/api/v2.2/erc20/{token_address}/holders?chain=eth"
 
     headers = {
@@ -31,7 +30,7 @@ def get_token_holders(token_address: str):
     json = r.json()
     return json["totalHolders"]
 
-def get_marketcap_score(token_address: str):
+def get_marketcap_score(token_address: str) -> float:
     url = f"https://api.coingecko.com/api/v3/simple/token_price/ethereum?contract_addresses={token_address}&vs_currencies=usd"
     r = requests.get(url)
     data = r.json()
@@ -40,7 +39,7 @@ def get_marketcap_score(token_address: str):
     else:
         return None
 
-def get_token_creation_date(token_address: str):
+def get_token_creation_date(token_address: str) -> str:
     params = {
         "chain": "eth",
         "addresses": [token_address]
@@ -69,14 +68,13 @@ def get_token_creation_date(token_address: str):
 
     return format_token_age(created_at)
 
-def calc_risk_score(scores):
+def calc_risk_score(scores) -> float:
     weights = {
         "liquidity_score": 0.35,
         "marketcap_score": 0.30,
         "holders_score": 0.20,
         "age_score": 0.15,
     }
-
 
     def extract_years_from_age_string(age_string: str) -> int:
         match = re.search(r"created (\d+) years", age_string)
