@@ -12,6 +12,12 @@ const ConnectWallet = () => {
 		if (isConnected) {
 			navigate('/home', { replace: true })
 		}
+	}, [])
+
+	useEffect(() => {
+		if (isConnected) {
+			navigate('/home', { replace: true })
+		}
 	}, [isConnected, navigate])
 
 	return (

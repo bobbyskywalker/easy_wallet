@@ -1,24 +1,21 @@
-import React from 'react';
+import React from 'react'
+import CircularIconContainer from './CircularIconContainer'
 
 interface FeatureButtonProps {
-  icon?: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+	Icon?: React.ComponentType<React.SVGProps<SVGSVGElement>>
+	title: string
+	onClick?: () => void
 }
 
-function FeatureButton({ icon: Icon }: FeatureButtonProps) {
-  return (
-    <button
-      className="
-        w-[60px] h-[60px]
-        rounded-full
-        backdrop-blur-[51px]
-        border
-        border-[rgba(15,18,18,0.05)]
-        flex items-center justify-center shadow-inner-icon
-      "
-    >
-      {Icon && <Icon className="w-5 h-5" />}
-    </button>
-  );
+function FeatureButton({ Icon, title, onClick }: FeatureButtonProps) {
+	return (
+		<button onClick={onClick}>
+			{Icon && <CircularIconContainer icon={<Icon />} />}
+			{title && (
+				<p className='text-white text-sm mt-1 font-medium'>{title}</p>
+			)}
+		</button>
+	)
 }
 
-export default FeatureButton;
+export default FeatureButton

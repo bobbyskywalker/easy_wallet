@@ -40,7 +40,7 @@ export function App() {
 					<Route path='/connect-wallet' element={<ConnectWallet />} />
 
 					<Route
-						path='/*'
+						path='/home'
 						element={
 							<AuthGate>
 								<Home />
