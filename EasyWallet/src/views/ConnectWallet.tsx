@@ -1,4 +1,4 @@
-import { useAppKit, useAppKitAccount, useDisconnect } from '@reown/appkit/react'
+import { useAppKit, useAppKitAccount } from '@reown/appkit/react'
 import PrimaryButton from '../components/PrimaryButton'
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router'
@@ -7,7 +7,6 @@ const ConnectWallet = () => {
 	const { open } = useAppKit()
 	const { isConnected } = useAppKitAccount()
 	const navigate = useNavigate()
-	const {disconnect} = useDisconnect()
 
 	useEffect(() => {
 		if (isConnected) {
@@ -36,8 +35,13 @@ const ConnectWallet = () => {
 					private, and only you control your assets.
 				</p>
 			</div>
-			<PrimaryButton label='Connect a Wallet' onClick={() => open()} />
-				<PrimaryButton label='Debug' onClick={() => disconnect()} />
+			<PrimaryButton
+				label='Connect a Wallet'
+				onClick={() => {
+					console.log('Connecting wallet...')
+					open()
+				}}
+			/>
 		</div>
 	)
 }
