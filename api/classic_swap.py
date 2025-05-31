@@ -55,12 +55,7 @@ def sign_and_send_transaction(tx, wallet_private_key):
 def swap_tokens(src_token, dst_token, amount_wei):
     swap_params = build_swap_params(src_token, dst_token, amount_wei)
     swap_tx = build_tx_for_swap(swap_params)
-    ok = input("Do you want to send a transaction to exchange with 1inch router? (y/n): ")
-    if ok.lower() == "y":
-        tx_hash = sign_and_send_transaction(swap_tx, WALLET_PRIVATE_KEY)
-    else:
-        print("Transaction cancelled.")
-        return None
+    tx_hash = sign_and_send_transaction(swap_tx, WALLET_PRIVATE_KEY)
     return tx_hash
 
 if __name__ == "__main__":
