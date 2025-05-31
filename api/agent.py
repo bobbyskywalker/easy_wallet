@@ -1,4 +1,7 @@
+import re
+
 from config import ai_client
+import json
 
 # A LLM integration module for creating descriptions and summary
 # of retrieved indices
@@ -10,6 +13,14 @@ class Agent:
         response = self.ai_client.responses.create(
             model="gpt-4o-mini",
             input=prompt,
+        )
+        return response.output_text
+
+    def __execute_web_search_prompt(self, prompt: str):
+        response = self.ai_client.responses.create(
+            model="gpt-4o",
+            input=prompt,
+            tools=[{"type": "web_search_preview"}],
         )
         return response.output_text
 
@@ -41,3 +52,37 @@ class Agent:
         )
         description = self.__execute_prompt(prompt)
         return description
+
+    def extract_json_from_text(self, text: str) -> dict:
+        """
+    Extracts the first JSON object from a string using regex.
+        """
+        match = re.search(r"\{.*?\}", text, re.DOTALL)
+        if match:
+            try:
+                return json.loads(match.group(0))
+            except json.JSONDecodeError as e:
+                raise ValueError(f"JSON found but invalid: {e}")
+        raise ValueError("No JSON object found in the response.")
+
+    def gen_token_stats(self, token_name: str):
+        prompt = (
+            "You are a cryptocurrency stats specialist.\n"
+            "Return only a JSON object in the following structure:\n"
+            "```\n"
+            "{\n"
+            '  "market_cap": 0,\n'
+            '  "circulating_supply": 0,\n'
+            '  "max_supply": 0,\n'
+            '  "total_supply": 0,\n'
+            '  "all_time_high": 0,\n'
+            '  "all_time_low": 0,\n'
+            '  "short_description": "N/A"\n'
+            "}\n"
+            "```\n"
+            "If you don't know a value, return a default number (random number, not 0).\n"
+            f"Token name: {token_name}\n"
+            "Only return the JSON inside the code block. No explanation, no markdown, no commentary."
+        )
+        raw_output = self.__execute_web_search_prompt(prompt)
+        return self.extract_json_from_text(raw_output)

@@ -316,3 +316,11 @@ def token_balance(wallet_address: str):
 def get_tokens():
     r = get_available_tokens()
     return r
+
+@app.get("/get-tokens-stats/{token_name}")
+def get_token_stats(token_name: str):
+    a = Agent()
+    r = a.gen_token_stats(token_name)
+    return r
+
+
