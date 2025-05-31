@@ -47,6 +47,7 @@ from solders.pubkey import Pubkey
 
 app = FastAPI()
 lock = asyncio.Lock()
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -142,6 +143,7 @@ async def get_token_data(token_address: str):
         raise HTTPException(status_code=500, detail="Internal server error.")
 
 
+
 @app.post("/add_record")
 async def add_record(data: RecordInput):
     async with lock:
@@ -217,6 +219,7 @@ async def add_record(data: RecordInput):
                 return {"success": True, "signature": str(sig)}
             except Exception as exc:
                 raise HTTPException(status_code=500, detail=str(exc))
+
 
 @app.get("/records/{user_pubkey}", response_model=list[RecordOutput])
 async def get_records_for_user(user_pubkey: str):
