@@ -11,6 +11,7 @@ from typing import List
 from openai import OpenAIError
 from agent import Agent
 from classic_swap import swap_tokens
+from get_wallet_balance import get_wallet_balance
 
 from service import (
     get_liquidity,
@@ -22,7 +23,8 @@ from service import (
 
 from bc_models import (
     RecordInput,
-    RecordOutput
+    RecordOutput,
+    SwapModel
 )
 
 from config import (
@@ -278,12 +280,14 @@ async def get_records_for_user(user_pubkey: str):
 
         return results
 
-@app.post("/swap/{dst_address}")
-def swap_request(dst_address: str):
+@app.post("/swap")
+def swap_request(req: SwapModel):
     tx_hash = swap_tokens(
-        "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",  # ETH
-        dst_address, #"0x95aD61b0a150d79219dCF64E1E6Cc01f0B64C4cE",  # SHIBA INU
-        10000000000000
+            req.src_token,  # 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE ETH
+            req.dst_token, #"0x95aD61b0a150d79219dCF64E1E6Cc01f0B64C4cE",  # SHIBA INU
+            req.amount,
+            req.wallet_address,
+            req.private_key
     )
     payload = {"tx_hash": tx_hash}
     return payload
@@ -297,3 +301,8 @@ def get_all_prices():
 def get_token_price(token_address: List[str] = Query(...)):
     r = get_requested_token_prices(token_address)
     return r
+
+@app.get("/wallet-balance/{wallet_address}")
+def wallet_balance(wallet_address: str):
+    balance = get_wallet_balance(wallet_address)
+    return balance

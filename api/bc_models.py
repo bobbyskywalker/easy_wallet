@@ -14,3 +14,10 @@ class RecordOutput(BaseModel):
     actual_price: float
     risk_score: int
     timestamp: int
+
+class SwapModel(BaseModel):
+    src_token: str
+    dst_token: str
+    amount: int
+    wallet_address: str
+    private_key: str

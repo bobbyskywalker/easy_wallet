@@ -1,6 +1,6 @@
 import requests
 from web3 import Web3
-from config import ONE_INCH_KEY, WALLET_PRIVATE_KEY, WALLET_ADDRESS, RPC_URL, CHAIN_ID
+from config import ONE_INCH_KEY, RPC_URL, CHAIN_ID
 
 def get_api_base_url():
     return f"https://api.1inch.dev/swap/v6.0/{CHAIN_ID}"
@@ -14,18 +14,18 @@ def get_headers():
 def get_web3():
     return Web3(Web3.HTTPProvider(RPC_URL))
 
-def get_wallet_address():
-    return Web3.to_checksum_address(WALLET_ADDRESS)
+def prepare_wallet_address(wallet_address):
+    return Web3.to_checksum_address(wallet_address)
 
 def api_request_url(method_name, query_params):
     return f"{get_api_base_url()}{method_name}?{'&'.join([f'{key}={value}' for key, value in query_params.items()])}"
 
-def build_swap_params(src_token, dst_token, amount_wei):
+def build_swap_params(src_token, dst_token, amount_wei, wallet_address):
     return {
         "src": src_token,
         "dst": dst_token,
         "amount": str(amount_wei),
-        "from": get_wallet_address(),
+        "from": prepare_wallet_address(wallet_address),
         "slippage": 1,
         "disableEstimate": False,
         "allowPartialFill": False,
@@ -38,9 +38,9 @@ def build_tx_for_swap(swap_params):
     data = response.json()
     return data["tx"]
 
-def sign_and_send_transaction(tx, wallet_private_key):
+def sign_and_send_transaction(tx, wallet_address, wallet_private_key):
     web3 = get_web3()
-    wallet_address = get_wallet_address()
+    wallet_address = prepare_wallet_address(wallet_address)
     tx["to"] = Web3.to_checksum_address(tx["to"])
     tx["gas"] = int(tx["gas"])
     tx["gasPrice"] = int(tx["gasPrice"])
@@ -52,17 +52,19 @@ def sign_and_send_transaction(tx, wallet_private_key):
     tx_hash = web3.eth.send_raw_transaction(signed_tx.raw_transaction)
     return web3.to_hex(tx_hash)
 
-def swap_tokens(src_token, dst_token, amount_wei):
-    swap_params = build_swap_params(src_token, dst_token, amount_wei)
+def swap_tokens(src_token, dst_token, amount_wei, wallet_address, wallet_private_key):
+    swap_params = build_swap_params(src_token, dst_token, amount_wei, wallet_address)
     swap_tx = build_tx_for_swap(swap_params)
-    tx_hash = sign_and_send_transaction(swap_tx, WALLET_PRIVATE_KEY)
+    tx_hash = sign_and_send_transaction(swap_tx, wallet_address, wallet_private_key)
     return tx_hash
 
-if __name__ == "__main__":
-    # Example usage
-    tx_hash = swap_tokens(
-        "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",  # ETH
-        "0x95aD61b0a150d79219dCF64E1E6Cc01f0B64C4cE",  # SHIBA INU
-        10000000000000  # 0.00001 ETH in wei
-    )
-    print("Tx hash:", tx_hash)
+# if __name__ == "__main__":
+#     # Example usage
+#     tx_hash = swap_tokens(
+#         "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",  # ETH
+#         "0x95aD61b0a150d79219dCF64E1E6Cc01f0B64C4cE",  # SHIBA INU
+#         10000000000000,  # 0.00001 ETH in wei
+#         WALLET_ADDRESS,
+#         WALLET_PRIVATE_KEY
+#     )
+#     print("Tx hash:", tx_hash)
