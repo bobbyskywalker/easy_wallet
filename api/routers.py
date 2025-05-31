@@ -1,11 +1,12 @@
 from __future__ import annotations
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 import asyncio
 
 import struct
 import base64
 import logging
+from typing import List
 
 from openai import OpenAIError
 from agent import Agent
@@ -45,6 +46,7 @@ from solders.transaction import Transaction
 from solana.rpc.async_api import AsyncClient
 from solders.pubkey import Pubkey
 
+from spot_price_checker import get_whitelisted_token_prices, get_requested_token_prices
 
 app = FastAPI()
 lock = asyncio.Lock()
@@ -285,3 +287,13 @@ def swap_request(dst_address: str):
     )
     payload = {"tx_hash": tx_hash}
     return payload
+
+@app.get("/price")
+def get_all_prices():
+    r = get_whitelisted_token_prices()
+    return r
+
+@app.get("/price/")
+def get_token_price(token_address: List[str] = Query(...)):
+    r = get_requested_token_prices(token_address)
+    return r
