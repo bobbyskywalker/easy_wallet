@@ -11,10 +11,18 @@ import requests
 def get_liquidity(token_address: str) -> float:
     url = f"https://api.dexscreener.com/latest/dex/tokens/{token_address}"
 
-    response = requests.get(url)
-    data = response.json()
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        data = response.json()
+    except (requests.RequestException, ValueError):
+        return 0.0
 
-    total_liquidity = sum(float(pair.get("liquidity", {}).get("usd", 0)) for pair in data.get("pairs", []))
+    pairs = data.get("pairs") or []
+    total_liquidity = sum(
+        float(pair.get("liquidity", {}).get("usd", 0)) for pair in pairs
+    )
+
     return total_liquidity
 
 def get_token_holders(token_address: str) -> float:

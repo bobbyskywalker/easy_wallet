@@ -68,6 +68,8 @@ async def get_token_data(token_address: str):
     try:
         try:
             liquidity = get_liquidity(token_address)
+            if liquidity == None:
+                liquidity = 0
         except ValueError as e:
             logging.warning(f"Invalid token_address input: {e}")
             raise HTTPException(status_code=400, detail=f"Invalid token_address: {token_address}")
