@@ -5,7 +5,8 @@ import logging
 
 from openai import OpenAIError
 
-from service import get_liquidity, calc_risk_score
+from service import get_token_holders
+from service import get_liquidity, calc_risk_score, get_marketcap_score
 from agent import Agent
 
 app = FastAPI()
@@ -18,20 +19,28 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.get("/token-data/{network}")
-async def get_token_data(network: str):
+@app.get("/token-data/{network}/{token_address}")
+async def get_token_data(network: str, token_address: str):
     try:
+
         try:
             liquidity = get_liquidity(network)
         except ValueError as e:
             logging.warning(f"Invalid network input: {e}")
             raise HTTPException(status_code=400, detail=f"Invalid network: {network}")
 
+        try:
+            holders_count = get_token_holders(token_address)
+        except ValueError as e:
+            logging.warning(f"Invalid token adress: {e}")
+            raise HTTPException(status_code=400, detail=f"Invalid token address: {token_address}")
+
+
         scores = {
             "liquidity_score": liquidity,
-            "marketcap_score": 30000000, # get_marketcap_score()
-            "holders_score": 3290, # get_holders_score()
-            "age_score": 90, # get_age_score()
+            "marketcap_score": 3479, # get_marketcap_score()
+            "holders_score": holders_count, # get_holders_score()
+            "age_score": 8, # get_age_score()
             "verified_score": 1, # get_verified_score
             "blacklist_score": 1, # get_blacklist_score()
             "lp_locked_score": 32 # get_lp_locked_score()
@@ -85,5 +94,4 @@ async def get_token_data(network: str):
     except Exception as e:
         logging.exception(f"Unexpected server error: {e}")
         raise HTTPException(status_code=500, detail="Internal server error.")
-
 

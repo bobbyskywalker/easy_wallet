@@ -1,5 +1,9 @@
 import requests
+from moralis import evm_api
 from typing import Dict
+
+from config import MORALIS_KEY
+
 
 # liquidity fetch utility function
 # @param: network- a network to fetch the index value from
@@ -22,6 +26,26 @@ def get_liquidity(network: str):
                 continue
 
     return highest
+
+def get_token_holders(token_adress: str):
+    url = f"https://solana-gateway.moralis.io/token/mainnet/holders/{token_adress}"
+
+    headers = {
+        "Accept": "application/json",
+        "X-API-Key": MORALIS_KEY
+    }
+
+    r = requests.get(url=url, headers=headers)
+    json = r.json()
+    return json["totalHolders"]
+
+def get_marketcap_score(coin: str):
+    url = f"https://api.coingecko.com/api/v3/coins/{coin}"
+
+    r = requests.get(url=url)
+    json = r.json()
+
+    return json["market_cap"]["usd"]
 
 def calc_risk_score(scores: Dict[str, float]) -> float:
     weights = {
