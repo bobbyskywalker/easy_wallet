@@ -1,0 +1,15 @@
+import React from 'react';
+import { ReactComponent as Search } from '../assets/search.svg'; // replace with your actual path
+
+export default function SearchBar() {
+  return (
+    <div className="w-full bg-[#1E1E1E] rounded-xl flex items-center px-4 py-3">
+      <input
+        type="text"
+        placeholder="Search Token"
+        className="flex-1 bg-transparent outline-none text-sm text-white placeholder:text-gray-400"
+      />
+      <Search className="w-5 h-5 text-gray-400" />
+    </div>
+  );
+}
