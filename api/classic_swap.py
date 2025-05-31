@@ -62,12 +62,11 @@ def prepare_swap_tx(src_token, dst_token, amount_wei, wallet_address):
     swap_params = build_swap_params(src_token, dst_token, amount_wei, wallet_address)
     return build_tx_for_swap(swap_params)
 
-if __name__ == "__main__":
-    # Example usage
-    tx_hash = prepare_swap_tx(
-        "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",  # ETH
-        "0x95aD61b0a150d79219dCF64E1E6Cc01f0B64C4cE",  # SHIBA INU
-        10000000000000,  # 0.00001 ETH in wei
-        WALLET_ADDRESS
-    )
-    print("Tx hash:", tx_hash)
+# if __name__ == "__main__":
+#     # Example usage
+#     tx_hash = prepare_swap_tx(
+#         "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",  # ETH
+#         "0x95aD61b0a150d79219dCF64E1E6Cc01f0B64C4cE",  # SHIBA INU
+#         10000000000000,  # 0.00001 ETH in wei
+#     )
+#     print("Tx hash:", tx_hash)

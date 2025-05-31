@@ -1,5 +1,5 @@
 import requests
-from config import ONE_INCH_KEY, WALLET_ADDRESS, CHAIN_ID
+from config import ONE_INCH_KEY, CHAIN_ID
 
 import requests
 
@@ -47,10 +47,10 @@ def get_tokens_balance(wallet_address):
     response = requests.get(apiUrl, headers=headers, params=params)
     return response.json()
 
-if __name__ == "__main__":
-	usd_balance = get_wallet_balance(WALLET_ADDRESS)
-	print(usd_balance)
-	print("\n")
-	tokens_balance = get_tokens_balance(WALLET_ADDRESS)
-	print(tokens_balance)
+# if __name__ == "__main__":
+# 	usd_balance = get_wallet_balance(WALLET_ADDRESS)
+# 	print(usd_balance)
+# 	print("\n")
+# 	tokens_balance = get_tokens_balance(WALLET_ADDRESS)
+# 	print(tokens_balance)
 	
