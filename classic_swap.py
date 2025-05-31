@@ -3,27 +3,28 @@ from web3 import Web3
 from dotenv import load_dotenv
 import os
 
+
 load_dotenv()
 API_KEY = os.getenv("API_KEY")
-chainId = 1  # Chain ID for Sepolia testnet
-web3RpcUrl = os.getenv("RPC_URL")  # URL for BSC node
-headers = { "Authorization": f"Bearer {API_KEY}", "accept": "application/json" }
-walletAddress = os.getenv("WALLET_ADDRESS")  # Your wallet address
-privateKey = os.getenv("WALLET_KEY")  # Your private key
+chainId = 1  # Ethereum Mainnet
+web3RpcUrl = os.getenv("RPC_URL")
+print("Using RPC URL:", web3RpcUrl)
+headers = {
+    "Authorization": f"Bearer {API_KEY}",
+    "accept": "application/json"
+}
+# po załadowaniu dotenv
+walletAddress = Web3.to_checksum_address(os.getenv("WALLET_ADDRESS"))
+privateKey = os.getenv("WALLET_KEY")
 
+from eth_account import Account
+derived_address = Account.from_key(privateKey).address
+print("✅ Adres z klucza:", derived_address)
+print("✅ Adres z .env:", walletAddress)
 
-# swapParams = {
-#     "src": "0x111111111117dc0aa78b770fa6a738034120c302",  # Token address of 1INCH
-#     "dst": "0x1af3f329e8be154074d8769d1ffa4ee058b1dbc3",  # Token address of DAI
-#     "amount": "100000000000000000",  # Amount of 1INCH to swap (in wei)
-#     "from": walletAddress,
-#     "slippage": 1,  # Maximum acceptable slippage percentage for the swap (e.g., 1 for 1%)
-#     "disableEstimate": False,  # Set to True to disable estimation of swap details
-#     "allowPartialFill": False,  # Set to True to allow partial filling of the swap order
-# }
 
 swapParams = {
-    "src": "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",  # ETH pseudo-adres w 1inch
+    "src": "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",  # ETH
     "dst": "0x95aD61b0a150d79219dCF64E1E6Cc01f0B64C4cE",  # SHIBA INU
     "amount": "10000000000000",  # 0.00001 ETH in wei
     "from": walletAddress,
@@ -32,20 +33,37 @@ swapParams = {
     "allowPartialFill": False,
 }
 
-apiBaseUrl = f"https://api.1inch.dev/swap/v6.0/{chainId}"
-# web3 = Web3(web3RpcUrl)
+web3 = Web3(Web3.HTTPProvider(web3RpcUrl))
 
-
-# Construct full API request URL
 def apiRequestUrl(methodName, queryParams):
     return f"{apiBaseUrl}{methodName}?{'&'.join([f'{key}={value}' for key, value in queryParams.items()])}"
 
-# Function to check token allowance
-def checkAllowance(tokenAddress, walletAddress):
-    url = apiRequestUrl("/approve/allowance", {"tokenAddress": tokenAddress, "walletAddress": walletAddress})
+apiBaseUrl = f"https://api.1inch.dev/swap/v6.0/{chainId}"
+
+def buildTxForSwap(swapParams):
+    url = apiRequestUrl("/swap", swapParams)
     response = requests.get(url, headers=headers)
     data = response.json()
-    return data.get("allowance")
+    return data["tx"]
 
-allowance = checkAllowance(swapParams["src"], walletAddress)
-print("Allowance: ", allowance)
+def signAndSendTransaction(tx, private_key):
+    tx["to"] = Web3.to_checksum_address(tx["to"])  # ✅ ważne!
+    tx["gas"] = int(tx["gas"])
+    tx["gasPrice"] = int(tx["gasPrice"])
+    tx["nonce"] = web3.eth.get_transaction_count(walletAddress)
+    tx["value"] = int(tx["value"])
+    tx["chainId"] = chainId
+    tx.pop("from", None)  # ✅ usuń, jeśli istnieje
+
+    signed_tx = web3.eth.account.sign_transaction(tx, private_key)
+    tx_hash = web3.eth.send_raw_transaction(signed_tx.raw_transaction)
+    return web3.to_hex(tx_hash)
+
+# główna część
+swapTx = buildTxForSwap(swapParams)
+print("Zbudowana transakcja swap:\n", swapTx)
+
+ok = input("Do you want to send this swap transaction? (y/n): ")
+if ok.lower() == "y":
+    tx_hash = signAndSendTransaction(swapTx, privateKey)
+    print("✅ Wysłano! Tx hash:", tx_hash)
