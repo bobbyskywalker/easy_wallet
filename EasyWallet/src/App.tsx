@@ -2,6 +2,9 @@ import { createAppKit } from '@reown/appkit/react'
 import { WagmiProvider } from 'wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { projectId, metadata, networks, wagmiAdapter } from './config'
+import ConnectWallet from './views/ConnectWallet'
+import { Navigate, Route, Routes } from 'react-router'
+import AuthGate from './components/AuthGate'
 import Home from './views/Home'
 
 const queryClient = new QueryClient()
@@ -17,11 +20,11 @@ const generalConfig = {
 	mobile: {
 		enabled: true,
 		showQRCode: true,
-		showWalletConnect: true
+		showWalletConnect: true,
 	},
 	onError: (error: Error) => {
 		console.log('AppKit Error:', error)
-	}
+	},
 }
 
 createAppKit({
@@ -31,11 +34,27 @@ createAppKit({
 
 export function App() {
 	return (
-			<WagmiProvider config={wagmiAdapter.wagmiConfig}>
-				<QueryClientProvider client={queryClient}>
-					<Home />
-				</QueryClientProvider>
-			</WagmiProvider>
+		<WagmiProvider config={wagmiAdapter.wagmiConfig}>
+			<QueryClientProvider client={queryClient}>
+				<Routes>
+					<Route path='/connect-wallet' element={<ConnectWallet />} />
+
+					<Route
+						path='/*'
+						element={
+							<AuthGate>
+								<Home />
+							</AuthGate>
+						}
+					/>
+
+					<Route
+						path='*'
+						element={<Navigate to='/connect-wallet' replace />}
+					/>
+				</Routes>
+			</QueryClientProvider>
+		</WagmiProvider>
 	)
 }
 
