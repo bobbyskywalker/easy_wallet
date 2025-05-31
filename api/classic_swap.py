@@ -1,61 +1,68 @@
 import requests
 from web3 import Web3
-from dotenv import load_dotenv
-from config import ONE_INCH_KEY, walletPrivateKey, walletAddressRaw
 import os
-
+from config import ONE_INCH_KEY, WALLET_PRIVATE_KEY, WALLET_ADDRESS
 
 chainId = 1  # Ethereum Mainnet
+apiBaseUrl = f"https://api.1inch.dev/swap/v6.0/{chainId}"
 web3RpcUrl = os.getenv("RPC_URL")
-print("Using RPC URL:", web3RpcUrl)
 headers = {
     "Authorization": f"Bearer {ONE_INCH_KEY}",
     "accept": "application/json"
 }
-
-walletAddress = Web3.to_checksum_address(walletAddressRaw)
-
-swapParams = {
-    "src": "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",  # ETH
-    "dst": "0x95aD61b0a150d79219dCF64E1E6Cc01f0B64C4cE",  # SHIBA INU
-    "amount": "10000000000000",  # 0.00001 ETH in wei
-    "from": walletAddress,
-    "slippage": 1,
-    "disableEstimate": False,
-    "allowPartialFill": False,
-}
-
 web3 = Web3(Web3.HTTPProvider(web3RpcUrl))
+walletAddress = Web3.to_checksum_address(WALLET_ADDRESS)
 
-def apiRequestUrl(methodName, queryParams):
-    return f"{apiBaseUrl}{methodName}?{'&'.join([f'{key}={value}' for key, value in queryParams.items()])}"
+def api_request_url(method_name, query_params):
+    return f"{apiBaseUrl}{method_name}?{'&'.join([f'{key}={value}' for key, value in query_params.items()])}"
 
-apiBaseUrl = f"https://api.1inch.dev/swap/v6.0/{chainId}"
+def build_swap_params(src_token, dst_token, amount_wei):
+    return {
+        "src": src_token,
+        "dst": dst_token,
+        "amount": str(amount_wei),
+        "from": walletAddress,
+        "slippage": 1,
+        "disableEstimate": False,
+        "allowPartialFill": False,
+    }
 
-def buildTxForSwap(swapParams):
-    url = apiRequestUrl("/swap", swapParams)
+def build_tx_for_swap(swap_params):
+    url = api_request_url("/swap", swap_params)
     response = requests.get(url, headers=headers)
+    response.raise_for_status()
     data = response.json()
     return data["tx"]
 
-def signAndSendTransaction(tx, wallet_private_key):
-    tx["to"] = Web3.to_checksum_address(tx["to"])  # ✅ ważne!
+def sign_and_send_transaction(tx, wallet_private_key):
+    tx["to"] = Web3.to_checksum_address(tx["to"])
     tx["gas"] = int(tx["gas"])
     tx["gasPrice"] = int(tx["gasPrice"])
+    print(int(tx["gasPrice"]))
     tx["nonce"] = web3.eth.get_transaction_count(walletAddress)
     tx["value"] = int(tx["value"])
     tx["chainId"] = chainId
-    tx.pop("from", None)  # ✅ usuń, jeśli istnieje
-
-    signed_tx = web3.eth.account.sign_transaction(tx, walletPrivateKey)
+    tx.pop("from", None)
+    signed_tx = web3.eth.account.sign_transaction(tx, wallet_private_key)
     tx_hash = web3.eth.send_raw_transaction(signed_tx.raw_transaction)
     return web3.to_hex(tx_hash)
 
-# główna część
-swapTx = buildTxForSwap(swapParams)
-print("Zbudowana transakcja swap:\n", swapTx)
+def swap_tokens(src_token, dst_token, amount_wei):
+    swap_params = build_swap_params(src_token, dst_token, amount_wei)
+    swap_tx = build_tx_for_swap(swap_params)
+    ok = input("Do you want to send a transaction to exchange with 1inch router? (y/n): ")
+    if ok.lower() == "y":
+        tx_hash = sign_and_send_transaction(swap_tx, WALLET_PRIVATE_KEY)
+    else:
+        print("Transaction cancelled.")
+        return None
+    return tx_hash
 
-ok = input("Do you want to send this swap transaction? (y/n): ")
-if ok.lower() == "y":
-    tx_hash = signAndSendTransaction(swapTx, walletPrivateKey)
-    print("✅ Wysłano! Tx hash:", tx_hash)
+if __name__ == "__main__":
+    # Example usage
+    tx_hash = swap_tokens(
+        "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",  # ETH
+        "0x95aD61b0a150d79219dCF64E1E6Cc01f0B64C4cE",  # SHIBA INU
+        10000000000000  # 0.00001 ETH in wei
+    )
+    print("Tx hash:", tx_hash)
