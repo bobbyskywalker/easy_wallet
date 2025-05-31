@@ -6,6 +6,10 @@ import ConnectWallet from './views/ConnectWallet'
 import { Navigate, Route, Routes } from 'react-router'
 import AuthGate from './components/AuthGate'
 import Home from './views/Home'
+import Market from './views/Market'
+import Assets from './views/Assets'
+import Menu from './views/Menu'
+import Swap from './views/Swap'
 
 const queryClient = new QueryClient()
 
@@ -44,6 +48,42 @@ export function App() {
 						element={
 							<AuthGate>
 								<Home />
+							</AuthGate>
+						}
+					/>
+
+					<Route
+						path='/market'
+						element={
+							<AuthGate>
+								<Market />
+							</AuthGate>
+						}
+					/>
+
+					<Route
+						path='/assets'
+						element={
+							<AuthGate>
+								<Assets />
+							</AuthGate>
+						}
+					/>
+
+					<Route
+						path='/menu'
+						element={
+							<AuthGate>
+								<Menu />
+							</AuthGate>
+						}
+					/>
+
+					<Route
+						path='/swap'
+						element={
+							<AuthGate>
+								<Swap />
 							</AuthGate>
 						}
 					/>
