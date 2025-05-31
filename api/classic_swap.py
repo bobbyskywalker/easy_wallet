@@ -1,27 +1,19 @@
 import requests
 from web3 import Web3
 from dotenv import load_dotenv
+from config import ONE_INCH_KEY, walletPrivateKey, walletAddressRaw
 import os
 
 
-load_dotenv()
-API_KEY = os.getenv("API_KEY")
 chainId = 1  # Ethereum Mainnet
 web3RpcUrl = os.getenv("RPC_URL")
 print("Using RPC URL:", web3RpcUrl)
 headers = {
-    "Authorization": f"Bearer {API_KEY}",
+    "Authorization": f"Bearer {ONE_INCH_KEY}",
     "accept": "application/json"
 }
-# po załadowaniu dotenv
-walletAddress = Web3.to_checksum_address(os.getenv("WALLET_ADDRESS"))
-privateKey = os.getenv("WALLET_KEY")
 
-from eth_account import Account
-derived_address = Account.from_key(privateKey).address
-print("✅ Adres z klucza:", derived_address)
-print("✅ Adres z .env:", walletAddress)
-
+walletAddress = Web3.to_checksum_address(walletAddressRaw)
 
 swapParams = {
     "src": "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",  # ETH
@@ -46,7 +38,7 @@ def buildTxForSwap(swapParams):
     data = response.json()
     return data["tx"]
 
-def signAndSendTransaction(tx, private_key):
+def signAndSendTransaction(tx, wallet_private_key):
     tx["to"] = Web3.to_checksum_address(tx["to"])  # ✅ ważne!
     tx["gas"] = int(tx["gas"])
     tx["gasPrice"] = int(tx["gasPrice"])
@@ -55,7 +47,7 @@ def signAndSendTransaction(tx, private_key):
     tx["chainId"] = chainId
     tx.pop("from", None)  # ✅ usuń, jeśli istnieje
 
-    signed_tx = web3.eth.account.sign_transaction(tx, private_key)
+    signed_tx = web3.eth.account.sign_transaction(tx, walletPrivateKey)
     tx_hash = web3.eth.send_raw_transaction(signed_tx.raw_transaction)
     return web3.to_hex(tx_hash)
 
@@ -65,5 +57,5 @@ print("Zbudowana transakcja swap:\n", swapTx)
 
 ok = input("Do you want to send this swap transaction? (y/n): ")
 if ok.lower() == "y":
-    tx_hash = signAndSendTransaction(swapTx, privateKey)
+    tx_hash = signAndSendTransaction(swapTx, walletPrivateKey)
     print("✅ Wysłano! Tx hash:", tx_hash)
