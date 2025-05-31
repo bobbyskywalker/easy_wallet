@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import React from 'react';
 import Button from './components/primary_button.jsx'; // adjust path if different
 import ButtonF from './components/function_button.jsx'; // adjust path if different
