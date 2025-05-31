@@ -1,6 +1,9 @@
 import requests
 from moralis import evm_api
 from typing import Dict
+from datetime import datetime, timezone
+from dateutil.relativedelta import relativedelta
+import re
 
 from config import MORALIS_KEY
 
@@ -27,8 +30,8 @@ def get_liquidity(network: str):
 
     return highest
 
-def get_token_holders(token_adress: str):
-    url = f"https://solana-gateway.moralis.io/token/mainnet/holders/{token_adress}"
+def get_token_holders(token_address: str):
+    url = f"https://deep-index.moralis.io/api/v2.2/erc20/{token_address}/holders?chain=eth"
 
     headers = {
         "Accept": "application/json",
@@ -39,33 +42,66 @@ def get_token_holders(token_adress: str):
     json = r.json()
     return json["totalHolders"]
 
-def get_marketcap_score(coin: str):
-    url = f"https://api.coingecko.com/api/v3/coins/{coin}"
+def get_marketcap_score(token_address: str):
+    url = f"https://api.coingecko.com/api/v3/simple/token_price/ethereum?contract_addresses={token_address}&vs_currencies=usd"
+    r = requests.get(url)
+    data = r.json()
+    if token_address.lower() in data:
+        return data[token_address.lower()]["usd"]
+    else:
+        return None
 
-    r = requests.get(url=url)
-    json = r.json()
+def get_token_creation_date(token_address: str):
+    params = {
+        "chain": "eth",
+        "addresses": [token_address]
+    }
 
-    return json["market_cap"]["usd"]
+    result = evm_api.token.get_token_metadata(
+        api_key=MORALIS_KEY,
+        params=params,
+    )
 
-def calc_risk_score(scores: Dict[str, float]) -> float:
+    if not result or not isinstance(result, list):
+        raise ValueError("Unexpected response from Moralis")
+
+    token_info = result[0]
+
+    if "created_at" not in token_info:
+        raise ValueError("created_at not found in token metadata")
+
+    created_at = token_info["created_at"]
+
+    def format_token_age(created_at: str) -> str:
+        created_date = datetime.fromisoformat(created_at.replace("Z", "+00:00"))
+        now = datetime.now(timezone.utc)
+        delta = relativedelta(now, created_date)
+        return f"created {delta.years} years {delta.months} months {delta.days} days ago"
+
+    return format_token_age(created_at)
+
+def calc_risk_score(scores):
     weights = {
         "liquidity_score": 0.35,
-        "marketcap_score": 0.25,
-        "holders_score": 0.15,
-        "age_score": 0.10,
-        "verified_score": 0.05,
-        "blacklist_score": 0.05,
-        "lp_locked_score": 0.05
+        "marketcap_score": 0.30,
+        "holders_score": 0.20,
+        "age_score": 0.15,
     }
+
+
+    def extract_years_from_age_string(age_string: str) -> int:
+        match = re.search(r"created (\d+) years", age_string)
+        if match:
+            return int(match.group(1))
+        return 0
+
+    age = extract_years_from_age_string(scores["age_score"])
 
     normalized_scores = {
         "liquidity_score": min(scores["liquidity_score"] / 10_000_000, 1.0),
         "marketcap_score": min(scores["marketcap_score"] / 100_000_000, 1.0),
         "holders_score": min(scores["holders_score"] / 10_000, 1.0),
-        "age_score": min(scores["age_score"] / 365, 1.0),
-        "verified_score": scores["verified_score"],
-        "blacklist_score": scores["blacklist_score"],
-        "lp_locked_score": min(scores["lp_locked_score"] / 100, 1.0)
+        "age_score": min(age / 365, 1.0),
     }
 
     score = sum(normalized_scores[k] * weights[k] for k in weights)

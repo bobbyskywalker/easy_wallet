@@ -5,8 +5,7 @@ import logging
 
 from openai import OpenAIError
 
-from service import get_token_holders
-from service import get_liquidity, calc_risk_score, get_marketcap_score
+from service import get_liquidity, calc_risk_score, get_marketcap_score, get_token_holders, get_token_creation_date
 from agent import Agent
 
 app = FastAPI()
@@ -22,7 +21,6 @@ app.add_middleware(
 @app.get("/token-data/{network}/{token_address}")
 async def get_token_data(network: str, token_address: str):
     try:
-
         try:
             liquidity = get_liquidity(network)
         except ValueError as e:
@@ -35,15 +33,25 @@ async def get_token_data(network: str, token_address: str):
             logging.warning(f"Invalid token adress: {e}")
             raise HTTPException(status_code=400, detail=f"Invalid token address: {token_address}")
 
+        try:
+            marketcap = get_marketcap_score(token_address)
+            if marketcap is None:
+                raise ValueError("Market cap not found for token :( )")
+        except ValueError as e:
+            logging.warning(f"Invalid token address: {e}")
+            raise HTTPException(status_code=400, detail=f"Invalid token address: {token_address}")
+
+        try:
+            creation_date = get_token_creation_date(token_address)
+        except ValueError as e:
+            logging.warning(f"Invalid token address: {e}")
+            raise HTTPException(status_code=400, detail=f"Invalid token address: {token_address}")
 
         scores = {
             "liquidity_score": liquidity,
-            "marketcap_score": 3479, # get_marketcap_score()
-            "holders_score": holders_count, # get_holders_score()
-            "age_score": 8, # get_age_score()
-            "verified_score": 1, # get_verified_score
-            "blacklist_score": 1, # get_blacklist_score()
-            "lp_locked_score": 32 # get_lp_locked_score()
+            "marketcap_score": marketcap,
+            "holders_score": holders_count,
+            "age_score": creation_date
         }
 
         risk_score = calc_risk_score(scores)
@@ -77,12 +85,12 @@ async def get_token_data(network: str, token_address: str):
                 "score_description": get_agent_description(str(scores["age_score"]), "age_score")
             },
             "source_code_verification": {
-                "score": bool(scores["verified_score"]),
-                "score_description": get_agent_description(str(scores["verified_score"]), "verified_score")
+                "score": True,
+                "score_description": get_agent_description(str(1), "verified_score")
             },
             "scam_report": {
-                "score": bool(scores["blacklist_score"]),
-                "score_description": get_agent_description(str(scores["blacklist_score"]), "blacklist_score")
+                "score": False,
+                "score_description": get_agent_description(str(0), "blacklist_score")
             },
             "top_holders_analysis": None,
             "summary": a.gen_summary(scores)

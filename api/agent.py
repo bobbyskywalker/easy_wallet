@@ -24,8 +24,6 @@ class Agent:
             " liquidity: token liquidity;\n"
             " holders_count: number of token holders;\n"
             " token_age: when the token was created;\n"
-            " verified_score: bool, verified or not;\n"
-            " scam_report: bool, is it shady or not;\n"
             f"Content: name: {target_name}, value: {target_value}"
         )
         description = self.__execute_prompt(prompt)
