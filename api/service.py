@@ -10,25 +10,14 @@ from config import MORALIS_KEY
 
 # liquidity fetch utility function
 # @param: network- a network to fetch the index value from
-def get_liquidity(network: str):
-    url = f"https://api.geckoterminal.com/api/v2/networks/{network}/pools"
-    response = requests.get(url=url)
+def get_liquidity(token_address: str):
+    url = f"https://api.dexscreener.com/latest/dex/tokens/{token_address}"
+
+    response = requests.get(url)
     data = response.json()
 
-    highest = 0.0
-
-    for item in data.get("data", []):
-        attributes = item.get("attributes", {})
-        reserve = attributes.get("reserve_in_usd")
-        if reserve:
-            try:
-                reserve_value = float(reserve)
-                if reserve_value > highest:
-                    highest = reserve_value
-            except ValueError:
-                continue
-
-    return highest
+    total_liquidity = sum(float(pair.get("liquidity", {}).get("usd", 0)) for pair in data.get("pairs", []))
+    return total_liquidity
 
 def get_token_holders(token_address: str):
     url = f"https://deep-index.moralis.io/api/v2.2/erc20/{token_address}/holders?chain=eth"

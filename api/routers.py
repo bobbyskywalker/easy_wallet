@@ -18,14 +18,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.get("/token-data/{network}/{token_address}")
-async def get_token_data(network: str, token_address: str):
+@app.get("/token-data/{token_address}")
+async def get_token_data(token_address: str):
     try:
         try:
-            liquidity = get_liquidity(network)
+            liquidity = get_liquidity(token_address)
         except ValueError as e:
-            logging.warning(f"Invalid network input: {e}")
-            raise HTTPException(status_code=400, detail=f"Invalid network: {network}")
+            logging.warning(f"Invalid token_address input: {e}")
+            raise HTTPException(status_code=400, detail=f"Invalid token_address: {token_address}")
 
         try:
             holders_count = get_token_holders(token_address)
