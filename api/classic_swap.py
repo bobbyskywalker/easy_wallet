@@ -2,23 +2,30 @@ import requests
 from web3 import Web3
 from config import ONE_INCH_KEY, WALLET_PRIVATE_KEY, WALLET_ADDRESS, RPC_URL, CHAIN_ID
 
-apiBaseUrl = f"https://api.1inch.dev/swap/v6.0/{CHAIN_ID}"
-headers = {
-    "Authorization": f"Bearer {ONE_INCH_KEY}",
-    "accept": "application/json"
-}
-web3 = Web3(Web3.HTTPProvider(RPC_URL))
-walletAddress = Web3.to_checksum_address(WALLET_ADDRESS)
+def get_api_base_url():
+    return f"https://api.1inch.dev/swap/v6.0/{CHAIN_ID}"
+
+def get_headers():
+    return {
+        "Authorization": f"Bearer {ONE_INCH_KEY}",
+        "accept": "application/json"
+    }
+
+def get_web3():
+    return Web3(Web3.HTTPProvider(RPC_URL))
+
+def get_wallet_address():
+    return Web3.to_checksum_address(WALLET_ADDRESS)
 
 def api_request_url(method_name, query_params):
-    return f"{apiBaseUrl}{method_name}?{'&'.join([f'{key}={value}' for key, value in query_params.items()])}"
+    return f"{get_api_base_url()}{method_name}?{'&'.join([f'{key}={value}' for key, value in query_params.items()])}"
 
 def build_swap_params(src_token, dst_token, amount_wei):
     return {
         "src": src_token,
         "dst": dst_token,
         "amount": str(amount_wei),
-        "from": walletAddress,
+        "from": get_wallet_address(),
         "slippage": 1,
         "disableEstimate": False,
         "allowPartialFill": False,
@@ -26,16 +33,18 @@ def build_swap_params(src_token, dst_token, amount_wei):
 
 def build_tx_for_swap(swap_params):
     url = api_request_url("/swap", swap_params)
-    response = requests.get(url, headers=headers)
+    response = requests.get(url, headers=get_headers())
     response.raise_for_status()
     data = response.json()
     return data["tx"]
 
 def sign_and_send_transaction(tx, wallet_private_key):
+    web3 = get_web3()
+    wallet_address = get_wallet_address()
     tx["to"] = Web3.to_checksum_address(tx["to"])
     tx["gas"] = int(tx["gas"])
     tx["gasPrice"] = int(tx["gasPrice"])
-    tx["nonce"] = web3.eth.get_transaction_count(walletAddress)
+    tx["nonce"] = web3.eth.get_transaction_count(wallet_address)
     tx["value"] = int(tx["value"])
     tx["chainId"] = CHAIN_ID
     tx.pop("from", None)
