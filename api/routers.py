@@ -222,8 +222,6 @@ async def add_record(data: RecordInput):
             except Exception as exc:
                 raise HTTPException(status_code=500, detail=str(exc))
 
-
-
 @app.get("/records/{user_pubkey}", response_model=list[RecordOutput])
 async def get_records_for_user(user_pubkey: str):
     try:
