@@ -1,0 +1,18 @@
+@import "tailwindcss";
+
+@theme {
+  --color-mainGreen: #97DC22;
+  --color-mainBlack: #101212;
+  --color-mainWhite: #FAFAFA;
+  --color-utilsGreen: #52D377;
+  --color-utilsYellow: #FA9A2A;
+  --color-utilsRed: #EE3232;
+  --color-blackBG: #101212;
+  --color-black1: #1C1D21;
+  --color-black2: #4B4B4B;
+  --inset-shadow-icon: inset 0px 1px 0px 0px rgba(255, 255, 255, 0.15);
+}
+
+body {
+	@apply bg-blackBG;
+}
