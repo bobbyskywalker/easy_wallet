@@ -55,7 +55,7 @@ def sign_and_send_transaction(tx, wallet_address, wallet_private_key):
 def swap_tokens(src_token, dst_token, amount_wei, wallet_address, wallet_private_key):
     swap_params = build_swap_params(src_token, dst_token, amount_wei, wallet_address)
     swap_tx = build_tx_for_swap(swap_params)
-    tx_hash = sign_and_send_transaction(swap_tx, wallet_private_key)
+    tx_hash = sign_and_send_transaction(swap_tx, wallet_address, wallet_private_key)
     return tx_hash
 
 if __name__ == "__main__":
