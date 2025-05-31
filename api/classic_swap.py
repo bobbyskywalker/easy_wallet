@@ -55,16 +55,19 @@ def sign_and_send_transaction(tx, wallet_address, wallet_private_key):
 def swap_tokens(src_token, dst_token, amount_wei, wallet_address, wallet_private_key):
     swap_params = build_swap_params(src_token, dst_token, amount_wei, wallet_address)
     swap_tx = build_tx_for_swap(swap_params)
-    tx_hash = sign_and_send_transaction(swap_tx, wallet_address, wallet_private_key)
+    tx_hash = sign_and_send_transaction(swap_tx, wallet_address,wallet_private_key)
     return tx_hash
+
+def prepare_swap_tx(src_token, dst_token, amount_wei, wallet_address):
+    swap_params = build_swap_params(src_token, dst_token, amount_wei, wallet_address)
+    return build_tx_for_swap(swap_params)
 
 if __name__ == "__main__":
     # Example usage
-    tx_hash = swap_tokens(
+    tx_hash = prepare_swap_tx(
         "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",  # ETH
         "0x95aD61b0a150d79219dCF64E1E6Cc01f0B64C4cE",  # SHIBA INU
         10000000000000,  # 0.00001 ETH in wei
-        WALLET_ADDRESS,
-        WALLET_PRIVATE_KEY
+        WALLET_ADDRESS
     )
     print("Tx hash:", tx_hash)
