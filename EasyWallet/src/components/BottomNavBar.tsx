@@ -6,7 +6,7 @@ import { ReactComponent as Swap } from '../assets/swap.svg'
 import type { JSX } from 'react'
 import { useNavigate } from 'react-router'
 
-type NavKey = 'home' | 'market' | 'assets' | 'menu'
+type NavKey = 'home' | 'market' | 'history' | 'menu'
 
 interface BottomNavBarProps {
 	active: NavKey
@@ -52,9 +52,9 @@ function BottomNavBar({ active }: BottomNavBarProps) {
 			{/* Assets */}
 			<NavButton
 				icon={<Assets className='w-[22px] h-[22px]' />}
-				label='Assets'
-				active={active === 'assets'}
-				onClick={() => navigate('/assets', { replace: true })}
+				label='History'
+				active={active === 'history'}
+				onClick={() => navigate('/history', { replace: true })}
 			/>
 
 			{/* Menu */}
