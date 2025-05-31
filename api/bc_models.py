@@ -4,6 +4,7 @@ class RecordInput(BaseModel):
     user_address: str
     symbol_from: str
     symbol_to: str
+    amount: float
     actual_price: float
     risk_score: int
     timestamp: int
@@ -11,6 +12,7 @@ class RecordInput(BaseModel):
 class RecordOutput(BaseModel):
     symbol_from: str
     symbol_to: str
+    amount: float
     actual_price: float
     risk_score: int
     timestamp: int

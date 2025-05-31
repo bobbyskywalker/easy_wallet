@@ -30,13 +30,13 @@ from bc_models import (
 from config import (
     PROGRAM_ID,
     SYS_PROGRAM_ID,
+    KEYPAIR_ENCODED,
     CLUSTER_URL,
     RISK_HEADER_DISCRIMINATOR,
     RISK_RECORD_DISCRIMINATOR
 )
 
 from contract_utils import (
-    load_keypair,
     header_pda,
     record_pda
 )
@@ -151,7 +151,7 @@ async def get_token_data(token_address: str):
 @app.post("/add_record")
 async def add_record(data: RecordInput):
     async with lock:
-        payer = load_keypair()
+        payer = KEYPAIR_ENCODED
         async with AsyncClient(CLUSTER_URL) as client:
             hdr = header_pda()
             hdr_info = await client.get_account_info(hdr)
