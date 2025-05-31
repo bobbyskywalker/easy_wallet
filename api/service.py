@@ -4,11 +4,10 @@ from datetime import datetime, timezone
 from dateutil.relativedelta import relativedelta
 import re
 
-from config import MORALIS_KEY
-
+from config import MORALIS_KEY, ONE_INCH_KEY
+import requests
 
 ### SECTION: token data fetch utility functions
-
 def get_liquidity(token_address: str) -> float:
     url = f"https://api.dexscreener.com/latest/dex/tokens/{token_address}"
 
@@ -93,3 +92,24 @@ def calc_risk_score(scores) -> float:
 
     score = sum(normalized_scores[k] * weights[k] for k in weights)
     return round(score * 100, 2)
+
+
+def get_available_tokens():
+    r = requests.get(
+        url="https://api.1inch.dev/swap/v5.2/1/tokens",
+        headers={
+            "Authorization": ONE_INCH_KEY,
+            "Accept": "application/json"
+        }
+    )
+    json_data = r.json()
+
+    def get_trustworthy_tokens(tokens: dict) -> dict:
+        trusted_symbols = {"BNB", "NEAR", "cUSDCv3", "PRIME", "RSR", "HIGH", "LTO", "wALV", "TRYB"}
+        trusted_tokens = {
+            addr: data for addr, data in tokens.items() if data["symbol"] in trusted_symbols
+        }
+        return dict(list(trusted_tokens.items())[:10])
+
+    tokens = json_data.get("tokens", {})
+    return get_trustworthy_tokens(tokens)

@@ -18,7 +18,8 @@ from service import (
     calc_risk_score,
     get_marketcap_score,
     get_token_holders,
-    get_token_creation_date
+    get_token_creation_date,
+    get_available_tokens
 )
 
 from bc_models import (
@@ -304,3 +305,8 @@ def get_token_price(token_address: List[str] = Query(...)):
 def wallet_balance(wallet_address: str):
     balance = get_wallet_balance(wallet_address)
     return balance
+
+@app.get("/get-available-tokens")
+def get_tokens():
+    r = get_available_tokens()
+    return r
