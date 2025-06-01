@@ -1,6 +1,8 @@
 from pydantic import BaseModel
+from dataclasses import dataclass
 
-class RecordInput(BaseModel):
+@dataclass
+class RecordInput:
     user_address: str
     symbol_from: str
     symbol_to: str

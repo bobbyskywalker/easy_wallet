@@ -54,9 +54,6 @@ class Agent:
         return description
 
     def extract_json_from_text(self, text: str) -> dict:
-        """
-    Extracts the first JSON object from a string using regex.
-        """
         match = re.search(r"\{.*?\}", text, re.DOTALL)
         if match:
             try:

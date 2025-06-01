@@ -7,7 +7,7 @@ Whether you're exploring your first token or making your first swap, Easy Wallet
 
 - 📊 **AI-Powered Token Insights:** Leveraging cutting-edge AI, Easy Wallet provides essential metrics like price, liquidity, and risk assessment — all presented in a clean, digestible format designed for newcomers.
 - 📚 **Smart Educational Guidance:** AI-driven learning modules offer tailored explanations, contextual tips, and interactive visuals to reinforce confidence in crypto exploration.
-- 🔄 **1-Click AI-Optimized Token Swapping:** Powered by the 1inch API, Easy Wallet intelligently optimizes swap routes, gas fees, and slippage to ensure the best possible trade execution.
+- 🔄 **1-Click Token Swapping:** Powered by the 1inch API, Easy Wallet intelligently optimizes swap routes, gas fees, and slippage to ensure the best possible trade execution.
 
 ## 🔥 Features
 

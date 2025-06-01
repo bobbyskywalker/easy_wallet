@@ -1,6 +1,11 @@
 import requests
 from web3 import Web3
+import time
+
+from swap_data import get_token_price, get_symbol
+from bc_models import RecordInput
 from config import ONE_INCH_KEY, RPC_URL, CHAIN_ID
+from contract_utils import add_record_to_chain
 
 def get_api_base_url():
     return f"https://api.1inch.dev/swap/v6.0/{CHAIN_ID}"
@@ -60,6 +65,19 @@ def swap_tokens(src_token, dst_token, amount_wei, wallet_address, wallet_private
 
 def prepare_swap_tx(src_token, dst_token, amount_wei, wallet_address):
     swap_params = build_swap_params(src_token, dst_token, amount_wei, wallet_address)
+    price = get_token_price(src_token)
+    symbol1 = get_symbol(src_token)
+    symbol2 = get_symbol(dst_token)
+    data = RecordInput (
+        wallet_address,
+        symbol1,
+        symbol2,
+        amount_wei,
+        price,
+        50,
+        int(time.time() * 1000)
+    )
+    add_record_to_chain(data)
     return build_tx_for_swap(swap_params)
 
 # if __name__ == "__main__":

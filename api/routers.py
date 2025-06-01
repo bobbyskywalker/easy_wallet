@@ -1,7 +1,6 @@
 from __future__ import annotations
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
-import asyncio
 
 import struct
 import base64
@@ -52,7 +51,6 @@ from solders.pubkey import Pubkey
 from spot_price_checker import get_whitelisted_token_prices, get_requested_token_prices
 
 app = FastAPI()
-lock = asyncio.Lock()
 
 app.add_middleware(
     CORSMiddleware,
@@ -228,57 +226,50 @@ async def add_record(data: RecordInput):
 @app.get("/records/{user_pubkey}", response_model=list[RecordOutput])
 async def get_records_for_user(user_pubkey: str):
     try:
-        user_pk = Pubkey.from_string(user_pubkey)
+        if user_pubkey.startswith("0x") and len(user_pubkey) == 42:
+            user_pk_bytes = b'\x00' * 12 + bytes.fromhex(user_pubkey[2:])
+        else:
+            user_pk_bytes = bytes(Pubkey.from_string(user_pubkey))
     except Exception:
         raise HTTPException(status_code=400, detail="Invalid public key")
-
     async with AsyncClient(CLUSTER_URL) as client:
         header_info = await client.get_account_info(header_pda())
         if header_info.value is None:
             return []
-
         data_hdr = header_info.value.data
         raw_hdr  = data_hdr if isinstance(data_hdr, bytes) else base64.b64decode(data_hdr[0])
         total    = struct.unpack_from("<Q", raw_hdr, 8)[0]
-
         results: list[RecordOutput] = []
-
         for i in range(total):
             try:
                 acc = await client.get_account_info(record_pda(i))
                 if acc.value is None:
                     continue
-
                 data = acc.value.data
                 raw  = data if isinstance(data, bytes) else base64.b64decode(data[0])
                 if len(raw) < 81:
                     continue
-
                 off = 8
-                if raw[off:off+32] != bytes(user_pk):
+                if raw[off:off+32] != user_pk_bytes:
                     continue
                 off += 32
-
                 symbol_from = raw[off:off+16].rstrip(b"\0").decode(); off += 16
                 symbol_to   = raw[off:off+16].rstrip(b"\0").decode(); off += 16
                 amount      = struct.unpack_from("<d", raw, off)[0]; off += 8
                 price       = struct.unpack_from("<d", raw, off)[0]; off += 8
                 risk        = struct.unpack_from("<B", raw, off)[0]; off += 1
                 ts          = struct.unpack_from("<q", raw, off)[0]
-
                 results.append(RecordOutput(
-                    symbol_from=symbol_from,
-                    symbol_to=symbol_to,
-                    amount=amount,
-                    actual_price=price,
-                    risk_score=risk,
-                    timestamp=ts
-                ))
-
+                                   symbol_from=symbol_from,
+                                   symbol_to=symbol_to,
+                                   amount=amount,
+                                   actual_price=price,
+                                   risk_score=risk,
+                                   timestamp=ts
+                               ))
             except Exception as e:
                 print(f"[!] Błąd przy parsowaniu rekordu {i}: {e}")
                 continue
-
         return results
 
 @app.post("/swap")
@@ -322,5 +313,6 @@ def get_token_stats(token_name: str):
     a = Agent()
     r = a.gen_token_stats(token_name)
     return r
+
 
 
