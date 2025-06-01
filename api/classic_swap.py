@@ -1,7 +1,7 @@
 import requests
 from web3 import Web3
 
-from api.bc_models import RecordInput
+from bc_models import RecordInput
 from config import ONE_INCH_KEY, RPC_URL, CHAIN_ID
 from contract_utils import add_record_to_chain
 
@@ -65,11 +65,14 @@ def prepare_swap_tx(src_token, dst_token, amount_wei, wallet_address):
     swap_params = build_swap_params(src_token, dst_token, amount_wei, wallet_address)
     data = RecordInput (
         wallet_address,
-        src_token,
-        dst_token,
-        
+        "BTC",
+        "ETH",
+        1000,
+        7,
+        69,
+        420
     )
-    add_record_to_chain()
+    add_record_to_chain(data)
     return build_tx_for_swap(swap_params)
 
 # if __name__ == "__main__":
