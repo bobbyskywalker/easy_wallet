@@ -10,7 +10,7 @@ import { useEffect, useState } from 'react'
 import { getWalletBalance } from '../utils/getWalletBalance'
 import { convertWeiToUsd, getUsersTokens } from '../utils/getUsersTokens'
 
-function Spinner() {
+export function Spinner() {
 	return (
 		<div
 			style={{

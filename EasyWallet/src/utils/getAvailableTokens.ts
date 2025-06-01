@@ -5,6 +5,7 @@ type SimplifiedToken = {
 	name: string
 	logoURI: string
 	price: number | null
+	address: string
 }
 
 const coingeckoIdMap: Record<string, string> = {
@@ -44,6 +45,7 @@ export const getAvailableTokens = async (): Promise<SimplifiedToken[]> => {
 				name: token.name,
 				logoURI: token.logoURI,
 				price,
+				address: token.address,
 			}
 		})
 

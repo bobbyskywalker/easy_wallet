@@ -4,7 +4,26 @@ import { ReactComponent as ReceiveIcon } from '../assets/receive.svg'
 import { ReactComponent as SwapIcon } from '../assets/reverse.svg'
 import CircularIconContainer from '../components/CircularIconContainer'
 import { useNavigate, useParams } from 'react-router'
-import { getTokenStats } from '../utils/getTokenData'
+import { getTokenData, getTokenStats } from '../utils/getTokenData'
+import RiskContainer from './RiskContainer'
+import { Ban, Calendar, User, WalletMinimal } from 'lucide-react'
+
+interface CryptoInfo {
+	market_cap: number
+	circulating_supply: number
+	max_supply: number
+	total_supply: number
+	all_time_high: number
+	all_time_low: number
+	short_description: string
+}
+
+const formatNumber = (value: number): string => {
+	if (value >= 1_000_000_000) return `${(value / 1_000_000_000).toFixed(2)}B`
+	if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(2)}M`
+	if (value >= 1_000) return `${(value / 1_000).toFixed(2)}K`
+	return value.toString()
+}
 
 const TokenDetails = () => {
 	const navigate = useNavigate()
@@ -15,24 +34,36 @@ const TokenDetails = () => {
 		price: string
 		logoURI: string
 	}>()
+
 	const encodedLogoURI = logoURI ? decodeURIComponent(logoURI) : ''
-	if (!symbol || !name || !address || !price) {
-		return <div className='text-white'>Invalid token details</div>
-	}
-	const [tokenStats, setTokenStats] = useState<any>(null)
+	const [tokenStats, setTokenStats] = useState<CryptoInfo | null>(null)
+	const [tokenRisk, setTokenRisk] = useState<any>(null)
 
 	useEffect(() => {
 		const fetchData = async () => {
+			if (tokenStats && tokenRisk) return
 			try {
-				const tokenStatsData = await getTokenStats(name)
-				setTokenStats(tokenStatsData)
-				console.log('Token Stats:', tokenStats)
+				if (!tokenStats) {
+					const tokenStatsData: CryptoInfo = await getTokenStats(
+						name!
+					)
+					setTokenStats(tokenStatsData)
+				}
+				if (!tokenRisk) {
+					const tokenData = await getTokenData(address!)
+					console.log('Token Data:', tokenData)
+					setTokenRisk(tokenData)
+				}
 			} catch (error) {
 				console.error('Error fetching token details:', error)
 			}
 		}
 		fetchData()
-	}, [])
+	}, [name])
+
+	if (!symbol || !name || !address || !price) {
+		return <div className='text-white'>Invalid token details</div>
+	}
 
 	return (
 		<div className='min-h-screen bg-black text-white px-6 pt-6 pb-24'>
@@ -50,7 +81,7 @@ const TokenDetails = () => {
 						icon={
 							<img
 								src={encodedLogoURI}
-								alt='BTC'
+								alt={symbol}
 								className='w-6 h-6 object-contain rounded-full'
 							/>
 						}
@@ -77,62 +108,108 @@ const TokenDetails = () => {
 				))}
 			</div>
 
-			{/* Risk Assessment */}
-			<div className='mb-6'>
-				<h2 className='text-sm font-semibold mb-2'>Risk Assessment</h2>
-				<div className='flex items-center gap-4 bg-[#1A1A1A] p-3 rounded-xl'>
-					<div className='w-10 h-10 bg-[#2B2B2B] rounded-xl flex items-center justify-center'>
-						<span className='text-xl'>📶</span>
-					</div>
-					<div>
-						<p className='text-white text-sm font-medium'>
-							Liquidity
-						</p>
-						<p className='text-gray-500 text-sm'>
-							The liquidity is &lt; 10.000
-						</p>
-					</div>
-				</div>
+			<p className='text-white font-semibold mb-5'>
+				Risk Score: {tokenRisk?.risk?.score.toFixed(0)}/100
+			</p>
+			<div className='flex flex-col gap-7 mb-5'>
+				<RiskContainer
+					icon={<User />}
+					title={`${
+						tokenRisk?.holders_count?.score ?? 'N/A'
+					} holders`}
+					description={
+						tokenRisk?.holders_count?.score_description ??
+						'No description available.'
+					}
+				/>
+
+				<RiskContainer
+					icon={<WalletMinimal />}
+					title={`${
+						tokenRisk?.liquidity?.score
+							? formatNumber(tokenRisk.liquidity.score)
+							: 'N/A'
+					} liquidity`}
+					description={
+						tokenRisk?.liquidity?.score_description ??
+						'No description available.'
+					}
+				/>
+
+				<RiskContainer
+					icon={<Calendar />}
+					title={`${
+						tokenRisk?.token_age?.score
+							? formatNumber(tokenRisk.token_age.score)
+							: 'N/A'
+					}`}
+					description={
+						tokenRisk?.token_age?.score_description ??
+						'No description available.'
+					}
+				/>
+
+				<RiskContainer
+					icon={<Ban />}
+					title={`${
+						tokenRisk?.scam_report?.score
+							? 'Token is flagged'
+							: 'No scam report'
+					}`}
+					description={
+						tokenRisk?.scam_report?.score_description ??
+						'No description available.'
+					}
+				/>
 			</div>
 
 			{/* Token Stats */}
 			<div className='mb-6'>
 				<h2 className='text-sm font-semibold mb-2'>Token Stats</h2>
-				<div className='text-sm text-white/80 space-y-2'>
-					<div className='flex justify-between'>
-						<span>Market Cap</span>
-						<span>$250M</span>
+				{tokenStats ? (
+					<div className='text-sm text-white/80 space-y-2'>
+						<div className='flex justify-between'>
+							<span>Market Cap</span>
+							<span>${formatNumber(tokenStats.market_cap)}</span>
+						</div>
+						<div className='flex justify-between'>
+							<span>Circulating Supply</span>
+							<span>
+								{formatNumber(tokenStats.circulating_supply)}
+							</span>
+						</div>
+						<div className='flex justify-between'>
+							<span>Max Supply</span>
+							<span>
+								{tokenStats.max_supply
+									? formatNumber(tokenStats.max_supply)
+									: 'Unlimited'}
+							</span>
+						</div>
+						<div className='flex justify-between'>
+							<span>Total Supply</span>
+							<span>{formatNumber(tokenStats.total_supply)}</span>
+						</div>
+						<div className='flex justify-between'>
+							<span>All Time High</span>
+							<span>${tokenStats.all_time_high}</span>
+						</div>
+						<div className='flex justify-between'>
+							<span>All Time Low</span>
+							<span>${tokenStats.all_time_low}</span>
+						</div>
 					</div>
-					<div className='flex justify-between'>
-						<span>Circulating Supply</span>
-						<span>$10M</span>
-					</div>
-					<div className='flex justify-between'>
-						<span>Max Supply</span>
-						<span>5M</span>
-					</div>
-					<div className='flex justify-between'>
-						<span>Total Supply</span>
-						<span>9M</span>
-					</div>
-					<div className='flex justify-between'>
-						<span>All Time High</span>
-						<span>$40</span>
-					</div>
-					<div className='flex justify-between'>
-						<span>All Time Low</span>
-						<span>$4</span>
-					</div>
-				</div>
+				) : (
+					<p className='text-gray-500 text-sm'>Loading stats...</p>
+				)}
 			</div>
 
 			{/* About Section */}
 			<div>
-				<h2 className='text-sm font-semibold mb-2'>About Bitcoin</h2>
+				<h2 className='text-sm font-semibold mb-2'>About {name}</h2>
 				<p className='text-sm text-gray-400'>
-					Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-					Tellus nullam vitae nec vitae, volutpat orci dolor odio dui.
-					Tellus euismod leo erat purus vitae phasellus volutpat amet.
+					{tokenStats?.short_description ??
+						'No description available.'}
 				</p>
 			</div>
 		</div>

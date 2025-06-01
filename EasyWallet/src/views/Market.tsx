@@ -8,10 +8,12 @@ type SimplifiedToken = {
 	name: string
 	logoURI: string
 	price: number | null
+	address: string
 }
 
 import { TokenBar } from '../components/TokenBar'
 import SearchBar from '../components/SearchBar'
+import { useNavigate } from 'react-router'
 
 const Market = () => {
 	const [loading, setLoading] = useState(false)
@@ -19,6 +21,7 @@ const Market = () => {
 		[]
 	)
 	const [searchValue, setSearchValue] = useState('')
+	const navigate = useNavigate()
 
 	useEffect(() => {
 		const fetchData = async () => {
@@ -59,13 +62,29 @@ const Market = () => {
 									.includes(searchValue.toLowerCase())
 							)
 							.map((token) => (
-								<TokenBar
-									key={token.symbol}
-									logoUrl={token.logoURI}
-									symbol={token.symbol}
-									name={token.name}
-									price={token.price ?? 0}
-								/>
+								<button
+									onClick={() =>
+										navigate(
+											`/details/${token.symbol}/${
+												token.name
+											}/${token.address}/${
+												token.price ?? 0
+											}/${encodeURIComponent(
+												token.logoURI
+											)}`
+										)
+									}
+									className='w-full'
+									key={token.address}
+								>
+									<TokenBar
+										key={token.symbol}
+										logoUrl={token.logoURI}
+										symbol={token.symbol}
+										name={token.name}
+										price={token.price ?? 0}
+									/>
+								</button>
 							))
 					)}
 				</div>
