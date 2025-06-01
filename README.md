@@ -25,8 +25,12 @@ Whether you're exploring your first token or making your first swap, Easy Wallet
 ## 🛠️ Tech Stack:
 - **Frontend:** React
 - **Backend:** FastAPI
-- **AI & Data Processing:** OpenAI SDK, Moralis
-- **Blockchain & Trading APIs:** 1Inch, CoinMarket
+- **AI & Data Processing:** OpenAI SDK
+- **Blockchain & Trading APIs:** 1Inch, Moralis, CoinMarket
 
 ## 🔐 Security
 Easy Wallet never stores user private keys or wallet data. All swaps are executed directly via users' connected wallets, ensuring full custody and transparency. The AI-driven security framework continuously analyzes risk factors to alert users of potential threats, enhancing safe trading and asset management.
+
+## 🎥 Sample preview
+Explore a preview of Easy Wallet’s user interface and core functionality:
+![Easy Wallet Demo](misc/Home.png)
