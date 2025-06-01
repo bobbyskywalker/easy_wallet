@@ -23,7 +23,7 @@ const ConnectWallet = () => {
 	return (
 		<div className='min-h-[80vh] px-4 flex flex-col justify-between'>
 			<img
-				src='../../public/onboarding-icon.png'
+				src='https://i.imgur.com/kzjfgFa.png'
 				className='w-full object-cover mb-4'
 				alt='Onboarding Background'
 			/>

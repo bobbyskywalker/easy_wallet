@@ -1,5 +1,3 @@
-import React from 'react'
-
 interface TokenBarProps {
 	logoUrl: string // URL for logo image
 	symbol: string

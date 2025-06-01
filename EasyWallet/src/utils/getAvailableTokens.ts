@@ -1,5 +1,3 @@
-import type { Token } from '../views/Market'
-
 type SimplifiedToken = {
 	symbol: string
 	name: string
@@ -18,6 +16,16 @@ const coingeckoIdMap: Record<string, string> = {
 	wALV: 'alvey-chain',
 	NEAR: 'near',
 	PRIME: 'echelon-prime',
+}
+
+interface Token {
+	address: string
+	symbol: string
+	decimals: number
+	name: string
+	logoURI: string
+	eip2612: boolean
+	tags: string[]
 }
 
 export const getAvailableTokens = async (): Promise<SimplifiedToken[]> => {

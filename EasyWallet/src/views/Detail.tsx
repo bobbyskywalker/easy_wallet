@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ReactComponent as SendIcon } from '../assets/send.svg'
 import { ReactComponent as ReceiveIcon } from '../assets/receive.svg'
 import { ReactComponent as SwapIcon } from '../assets/reverse.svg'

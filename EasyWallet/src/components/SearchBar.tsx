@@ -1,4 +1,3 @@
-import React from 'react'
 import { ReactComponent as Search } from '../assets/search.svg' // your actual path
 
 interface SearchBarProps {

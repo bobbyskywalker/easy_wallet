@@ -1,5 +1,3 @@
-import React from 'react'
-
 interface TokenCardProps {
 	imageUrl?: string
 	symbol: string
