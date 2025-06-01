@@ -1,7 +1,6 @@
 from __future__ import annotations
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
-import asyncio
 
 import struct
 import base64
@@ -52,7 +51,6 @@ from solders.pubkey import Pubkey
 from spot_price_checker import get_whitelisted_token_prices, get_requested_token_prices
 
 app = FastAPI()
-lock = asyncio.Lock()
 
 app.add_middleware(
     CORSMiddleware,
@@ -322,5 +320,6 @@ def get_token_stats(token_name: str):
     a = Agent()
     r = a.gen_token_stats(token_name)
     return r
+
 
 
