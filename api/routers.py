@@ -10,8 +10,8 @@ from typing import List
 
 from openai import OpenAIError
 from agent import Agent
-from classic_swap import swap_tokens
-from get_wallet_balance import get_wallet_balance
+from classic_swap import prepare_swap_tx
+from get_balance import get_wallet_balance, get_tokens_balance
 
 from service import (
     get_liquidity,
@@ -283,12 +283,11 @@ async def get_records_for_user(user_pubkey: str):
 
 @app.post("/swap")
 def swap_request(req: SwapModel):
-    tx_hash = swap_tokens(
+    tx_hash = prepare_swap_tx(
             req.src_token,  # 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE ETH
             req.dst_token, #"0x95aD61b0a150d79219dCF64E1E6Cc01f0B64C4cE",  # SHIBA INU
             req.amount,
-            req.wallet_address,
-            req.private_key
+            req.wallet_address
     )
     payload = {"tx_hash": tx_hash}
     return payload
@@ -308,7 +307,20 @@ def wallet_balance(wallet_address: str):
     balance = get_wallet_balance(wallet_address)
     return balance
 
+@app.get("/token-balance/{wallet_address}")
+def token_balance(wallet_address: str):
+    balance = get_tokens_balance(wallet_address)
+    return balance
+
 @app.get("/get-available-tokens")
 def get_tokens():
     r = get_available_tokens()
     return r
+
+@app.get("/get-tokens-stats/{token_name}")
+def get_token_stats(token_name: str):
+    a = Agent()
+    r = a.gen_token_stats(token_name)
+    return r
+
+

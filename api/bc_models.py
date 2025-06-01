@@ -22,4 +22,3 @@ class SwapModel(BaseModel):
     dst_token: str
     amount: int
     wallet_address: str
-    private_key: str
