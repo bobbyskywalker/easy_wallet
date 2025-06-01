@@ -55,9 +55,12 @@ async def add_record_to_chain(data: RecordInput) -> dict:
 
             def fixed16(s: str) -> bytes:
                 b = s.encode()[:16]
-                return b + b'\x00' * (16 - len(b))
-
-            user_pk = Pubkey.from_string(data.user_address)
+                return b + b'\x00' * (16-len(b))
+            if data.user_address.startswith("0x") and len(data.user_address) == 42:
+                    user_pk_bytes = b'\x00' * 12 + bytes.fromhex(data.user_address[2:])
+            else:
+                    user_pk = Pubkey.from_string(data.user_address)
+                    user_pk_bytes = bytes(user_pk)
             symbol_from_bytes = fixed16(data.symbol_from)
             symbol_to_bytes = fixed16(data.symbol_to)
 
