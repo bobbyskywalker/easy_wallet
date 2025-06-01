@@ -1,8 +1,12 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import PrimaryButton from '../components/PrimaryButton'
 import BottomNavBar from '../components/BottomNavBar'
 import CircularIconContainer from '../components/CircularIconContainer'
 import { ReactComponent as Reverse } from '../assets/reverse.svg'
+import { useSendTransaction } from 'wagmi'
+import { parseUnits } from 'viem'
+import { getSwapData } from '../utils/getTransactionData'
+import { Modal } from '../components/TransactionCard'
 
 const TokenInput = ({
 	iconUrl,
@@ -61,6 +65,7 @@ const TokenInput = ({
 export default function SwapScreen() {
 	const [payAmount, setPayAmount] = React.useState('')
 	const [receiveAmount, setReceiveAmount] = React.useState('')
+	const { address } = useSendTransaction()
 
 	const [payToken, setPayToken] = React.useState({
 		symbol: 'BTC',
@@ -98,8 +103,52 @@ export default function SwapScreen() {
 		setPayAmount(receiveAmount)
 	}
 
+	const { sendTransaction, isSuccess, isError, error } = useSendTransaction()
+
+	const [isModalOpen, setIsModalOpen] = React.useState(false)
+	const [modalTitle, setModalTitle] = React.useState('')
+	const [modalDescription, setModalDescription] = React.useState('')
+
+	const handleSwap = async () => {
+		try {
+			const response = await getSwapData(address)
+			console.log('Swap data:', response)
+
+			const txData = response.tx_hash
+
+			await sendTransaction({
+				to: txData.to,
+				data: txData.data,
+				value: parseUnits('0.00001', 18),
+			})
+		} catch (err) {
+			console.error('Transaction has failed', err)
+		}
+	}
+
+	useEffect(() => {
+		if (isSuccess) {
+			setModalTitle('Transaction Successful')
+			setModalDescription(`Tokens successfully swapped!`)
+			setIsModalOpen(true)
+		} else if (isError) {
+			setModalTitle('Transaction Failed')
+			setModalDescription(`Oops, something went wrong...`)
+			setIsModalOpen(true)
+		}
+	}, [isSuccess, isError])
+
 	return (
 		<div className='min-h-screen bg-black text-white px-4 py-6 flex flex-col items-center'>
+			{isModalOpen && (
+				<Modal
+					title={modalTitle}
+					description={modalDescription}
+					onClose={() => setIsModalOpen(false)}
+					onDone={() => setIsModalOpen(false)}
+				/>
+			)}
+
 			<h1 className='text-xl font-semibold mb-6'>Swap</h1>
 
 			<div className='w-full max-w-md space-y-6'>
@@ -141,7 +190,7 @@ export default function SwapScreen() {
 					{receiveToken.symbol}
 				</p>
 
-				<PrimaryButton label='Swap' onClick={() => alert('Swapped')} />
+				<PrimaryButton label='Swap' onClick={() => handleSwap()} />
 			</div>
 
 			{/* Bottom Navigation */}
