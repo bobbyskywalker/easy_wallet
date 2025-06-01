@@ -5,7 +5,6 @@ interface TokenCardProps {
 	symbol: string
 	name: string
 	amount: string
-	value: number
 	onPress?: () => void
 }
 
@@ -14,7 +13,6 @@ function TokenCard({
 	symbol,
 	name,
 	amount,
-	value,
 	onPress,
 }: TokenCardProps) {
 	return (
@@ -47,16 +45,7 @@ function TokenCard({
 			</div>
 
 			<div className='flex items-center justify-between'>
-				<span className='text-[20px] font-semibold'>{amount}</span>
-				<span
-					className={`text-xs font-medium px-2 py-1 rounded-full ${
-						value >= 0
-							? 'text-green-500 bg-[#1F2B1F]'
-							: 'text-red-500 bg-[#2B1F1F]'
-					}`}
-				>
-					{value > 0 ? `+${value}%` : `${value}%`}
-				</span>
+				<span className='text-[20px] font-semibold'>${amount}</span>
 			</div>
 		</div>
 	)

@@ -8,7 +8,7 @@ import BottomNavBar from '../components/BottomNavBar'
 import TokenCard from '../components/TokenCard'
 import { useEffect, useState } from 'react'
 import { getWalletBalance } from '../utils/getWalletBalance'
-import { getAvailableTokens } from '../utils/getAvailableTokens'
+import { convertWeiToUsd, getUsersTokens } from '../utils/getUsersTokens'
 
 function Spinner() {
 	return (
@@ -25,7 +25,7 @@ function Spinner() {
 	)
 }
 
-export interface Token {
+export interface UserToken {
 	address: string
 	symbol: string
 	decimals: number
@@ -33,13 +33,26 @@ export interface Token {
 	logoURI: string
 	eip2612: boolean
 	tags: string[]
+	isFoT: boolean
+	isCustom: boolean
+	type: string
+	tracked: boolean
+	wallets: {
+		[walletAddress: string]: {
+			balance: string // in WEI
+			allowance: string
+		}
+	}
 }
 
 const Home = () => {
 	const navigate = useNavigate()
 	const { address } = useAppKitAccount()
 	const [walletBalance, setWalletBalance] = useState<string | null>(null)
-	const [availableTokens, setAvailableTokens] = useState<Token[]>([])
+	const [availableTokens, setAvailableTokens] = useState<UserToken[]>([])
+	const [tokenValuesInUsd, setTokenValuesInUsd] = useState<
+		Record<string, number>
+	>({})
 	const [loading, setLoading] = useState(false)
 
 	useEffect(() => {
@@ -47,11 +60,26 @@ const Home = () => {
 			try {
 				setLoading(true)
 				const balance = await getWalletBalance(address!)
-				const availableTokens = await getAvailableTokens()
-				if (balance && availableTokens) {
+				const tokens = await getUsersTokens(address!)
+				if (balance && tokens) {
 					setWalletBalance(balance.toFixed(2))
-					setAvailableTokens(availableTokens)
-					console.log('Available Tokens:', availableTokens)
+					setAvailableTokens(tokens)
+
+					const usdMap: Record<string, number> = {}
+
+					// Calculate USD value for each token
+					for (const token of tokens) {
+						const tokenBalanceWei = token.wallets[address!]?.balance
+						if (tokenBalanceWei && tokenBalanceWei !== '0') {
+							const usdValue = await convertWeiToUsd(
+								tokenBalanceWei
+							)
+							usdMap[token.address] = usdValue ?? 0
+						} else {
+							usdMap[token.address] = 0
+						}
+					}
+					setTokenValuesInUsd(usdMap)
 				} else {
 					console.log(balance)
 					console.error('Failed to fetch wallet balance')
@@ -105,14 +133,29 @@ const Home = () => {
 			</div>
 			<div className='grid grid-cols-2 gap-4 mt-6'>
 				{availableTokens.map((token) => (
-					<TokenCard
+					<button
+						onClick={() =>
+							navigate(
+								`/details/${token.symbol}/${token.name}/${
+									token.address
+								}/${
+									tokenValuesInUsd[token.address] || 0
+								}/${encodeURIComponent(token.logoURI)}`
+							)
+						}
+						className='w-full'
 						key={token.address}
-						name={token.name}
-						symbol={token.symbol}
-						amount={'0'}
-						value={0}
-						imageUrl={token.logoURI}
-					/>
+					>
+						<TokenCard
+							key={token.address}
+							name={token.name}
+							symbol={token.symbol}
+							amount={(tokenValuesInUsd[token.address] || 0)
+								.toFixed(2)
+								.toString()}
+							imageUrl={token.logoURI}
+						/>
+					</button>
 				))}
 			</div>
 

@@ -29,7 +29,7 @@ export function TokenBar({ logoUrl, symbol, name, price }: TokenBarProps) {
 			{price !== undefined && (
 				<div className='text-right'>
 					<span className='text-lg font-semibold'>
-						${Number(price).toFixed(2)}
+						${Number(price).toFixed(4)}
 					</span>
 				</div>
 			)}

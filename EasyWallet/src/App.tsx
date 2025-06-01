@@ -10,6 +10,7 @@ import Market from './views/Market'
 import History from './views/History'
 import Menu from './views/Menu'
 import Swap from './views/Swap'
+import TokenDetails from './views/Detail'
 
 const queryClient = new QueryClient()
 
@@ -84,6 +85,15 @@ export function App() {
 						element={
 							<AuthGate>
 								<Swap />
+							</AuthGate>
+						}
+					/>
+
+					<Route
+						path='/details/:symbol/:name/:address/:price/:logoURI'
+						element={
+							<AuthGate>
+								<TokenDetails />
 							</AuthGate>
 						}
 					/>
