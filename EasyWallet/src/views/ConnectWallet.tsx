@@ -1,4 +1,4 @@
-import { useAppKit, useAppKitAccount, useDisconnect } from '@reown/appkit/react'
+import { useAppKit, useAppKitAccount } from '@reown/appkit/react'
 import PrimaryButton from '../components/PrimaryButton'
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router'
@@ -7,7 +7,6 @@ const ConnectWallet = () => {
 	const { open } = useAppKit()
 	const { isConnected } = useAppKitAccount()
 	const navigate = useNavigate()
-	const {disconnect} = useDisconnect()
 
 	useEffect(() => {
 		if (isConnected) {
@@ -24,7 +23,7 @@ const ConnectWallet = () => {
 	return (
 		<div className='min-h-[80vh] px-4 flex flex-col justify-between'>
 			<img
-				src='../../public/onboarding-icon.png'
+				src='https://i.imgur.com/kzjfgFa.png'
 				className='w-full object-cover mb-4'
 				alt='Onboarding Background'
 			/>
@@ -36,8 +35,13 @@ const ConnectWallet = () => {
 					private, and only you control your assets.
 				</p>
 			</div>
-			<PrimaryButton label='Connect a Wallet' onClick={() => open()} />
-				<PrimaryButton label='Debug' onClick={() => disconnect()} />
+			<PrimaryButton
+				label='Connect a Wallet'
+				onClick={() => {
+					console.log('Connecting wallet...')
+					open()
+				}}
+			/>
 		</div>
 	)
 }

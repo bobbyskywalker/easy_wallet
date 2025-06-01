@@ -7,9 +7,10 @@ import { Navigate, Route, Routes } from 'react-router'
 import AuthGate from './components/AuthGate'
 import Home from './views/Home'
 import Market from './views/Market'
-import Assets from './views/Assets'
+import History from './views/History'
 import Menu from './views/Menu'
 import Swap from './views/Swap'
+import TokenDetails from './views/Detail'
 
 const queryClient = new QueryClient()
 
@@ -62,10 +63,10 @@ export function App() {
 					/>
 
 					<Route
-						path='/assets'
+						path='/history'
 						element={
 							<AuthGate>
-								<Assets />
+								<History />
 							</AuthGate>
 						}
 					/>
@@ -84,6 +85,15 @@ export function App() {
 						element={
 							<AuthGate>
 								<Swap />
+							</AuthGate>
+						}
+					/>
+
+					<Route
+						path='/details/:symbol/:name/:address/:price/:logoURI'
+						element={
+							<AuthGate>
+								<TokenDetails />
 							</AuthGate>
 						}
 					/>

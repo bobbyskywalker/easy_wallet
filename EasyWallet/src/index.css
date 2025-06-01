@@ -1,18 +1,27 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @theme {
-  --color-mainGreen: #97DC22;
-  --color-mainBlack: #101212;
-  --color-mainWhite: #FAFAFA;
-  --color-utilsGreen: #52D377;
-  --color-utilsYellow: #FA9A2A;
-  --color-utilsRed: #EE3232;
-  --color-blackBG: #101212;
-  --color-black1: #1C1D21;
-  --color-black2: #4B4B4B;
-  --inset-shadow-icon: inset 0px 1px 0px 0px rgba(255, 255, 255, 0.15);
+	--color-mainGreen: #97dc22;
+	--color-mainBlack: #101212;
+	--color-mainWhite: #fafafa;
+	--color-utilsGreen: #52d377;
+	--color-utilsYellow: #fa9a2a;
+	--color-utilsRed: #ee3232;
+	--color-blackBG: #101212;
+	--color-black1: #1c1d21;
+	--color-black2: #4b4b4b;
+	--inset-shadow-icon: inset 0px 1px 0px 0px rgba(255, 255, 255, 0.15);
 }
 
 body {
 	@apply bg-blackBG;
+}
+
+@keyframes spin {
+	0% {
+		transform: rotate(0deg);
+	}
+	100% {
+		transform: rotate(360deg);
+	}
 }
