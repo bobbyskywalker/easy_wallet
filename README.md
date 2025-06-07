@@ -1,4 +1,6 @@
 # 🚀 Easy Wallet – Simplifying Crypto for Everyone
+### [Hackathon project at ETH GLOBAL PRAGUE]
+### Preview: https://ethglobal.com/showcase/easywallet-x4rj5 
 
 ## 🧠 Overview
 Easy Wallet is your go-to gateway into the world of crypto and blockchain. Designed specifically for newcomers, Easy Wallet demystifies the complexity of cryptocurrencies by offering an intuitive, educational, and analytic experience — all within a sleek, beginner-friendly interface.
@@ -34,3 +36,10 @@ Easy Wallet never stores user private keys or wallet data. All swaps are execute
 ## 🎥 Sample preview
 Explore a preview of Easy Wallet’s user interface and core functionality:
 ![Easy Wallet Demo](misc/Home.png)
+
+## Authors:
+* https://github.com/Jzackiewicz
+* https://github.com/pyciu123
+* https://github.com/dszafran
+* https://github.com/maciejwiacek
+* https://github.com/bobbyskywalker
